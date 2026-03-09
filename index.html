@@ -14,7 +14,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --grad:linear-gradient(135deg,#34d399,#60a5fa,#3b82f6);
+  --grad:linear-gradient(135deg,#4EB89D,#5BA8D4,#4A90C4);
   --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
   --gray-700:#334155;--blue:#3b82f6;--radius:16px;
   --shadow:0 4px 24px rgba(0,0,0,.10);--shadow-lg:0 8px 40px rgba(0,0,0,.15);
@@ -92,8 +92,8 @@ body.dark header{background:linear-gradient(135deg,#1e3a5f,#1e293b);}
 .header-brand{display:flex;align-items:center;gap:10px;}
 .header-brand img{width:36px;height:36px;border-radius:10px;}
 .header-brand h1{
-  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;color:#ffd700;
-  text-shadow:0 1px 3px rgba(0,0,0,.2);
+  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 .header-brand p{font-size:.68rem;color:rgba(255,255,255,.85);margin-top:1px;}
 .header-right{display:flex;align-items:center;gap:7px;}
@@ -180,7 +180,7 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
 
 /* Preview */
 .preview-wrap{position:relative;}
-.page-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
+.page-nav{display:none!important;}
 .page-nav button{background:var(--card-bg);border:2px solid var(--border);color:var(--text);width:33px;height:33px;border-radius:50%;font-size:.95rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
 .page-nav button:hover:not(:disabled){border-color:var(--blue);color:var(--blue);}
 .page-nav button:disabled{opacity:.3;cursor:not-allowed;}
@@ -190,7 +190,7 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
   background:#fff;color:#000;padding:13mm 15mm 13mm 17mm;
   width:794px;min-height:1123px;margin:0 auto;border-radius:4px;box-shadow:var(--shadow-lg);
   font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.55;
-  box-sizing:border-box;
+  box-sizing:border-box;height:auto;
 }
 
 /* Dokumen styles */
@@ -613,7 +613,7 @@ const DB_MATERI={
 let soalData=null,kunciVisible=false;
 let logos={logo1:null,logo2:null};
 let halamanSoal=[],currentPage=0;
-const SOAL_PER_HALAMAN=5;
+const SOAL_PER_HALAMAN=8;
 let GEMINI_API_KEY='';
 let deferredInstallPrompt=null;
 
@@ -823,25 +823,38 @@ function buildHalaman(data){
   const uraian=data.uraian||[];
   const headerHtml=buildDocHeader();
   halamanSoal=[];
-  const allBlocks=[];
-  if(pg.length>0){allBlocks.push({type:'section',tipe:'pg',label:'I. Pilihan Ganda',petunjuk:'Berilah tanda silang (X) pada huruf jawaban yang paling benar!'});pg.forEach((item,i)=>allBlocks.push({type:'pg',item,no:i+1}));}
-  if(isian.length>0){allBlocks.push({type:'section',tipe:'isian',label:'II. Isian Singkat',petunjuk:'Isilah titik-titik berikut dengan jawaban yang tepat!'});isian.forEach((item,i)=>allBlocks.push({type:'isian',item,no:pg.length+i+1}));}
-  if(uraian.length>0){allBlocks.push({type:'section',tipe:'uraian',label:'III. Uraian',petunjuk:'Jawablah pertanyaan berikut dengan lengkap dan benar!'});uraian.forEach((item,i)=>allBlocks.push({type:'uraian',item,no:pg.length+isian.length+i+1}));}
 
-  let soalCount=0,pageBlocks=[],isFirstPage=true;
-  for(let i=0;i<allBlocks.length;i++){
-    const b=allBlocks[i];
-    if(b.type==='section'){pageBlocks.push(b);}
-    else{
-      if(soalCount>0&&soalCount%SOAL_PER_HALAMAN===0){
-        halamanSoal.push(renderPage(isFirstPage?headerHtml:'',pageBlocks));
-        pageBlocks=[];isFirstPage=false;
-      }
-      pageBlocks.push(b);soalCount++;
-    }
+  // Render semua soal jadi 1 HTML panjang — page-break diatur CSS saat print
+  let html=headerHtml;
+  let tabelOpen=false;
+
+  function closeTabel(){if(tabelOpen){html+='</table>';tabelOpen=false;}}
+  function openTabel(){if(!tabelOpen){html+='<table class="doc-soal-table">';tabelOpen=true;}}
+
+  if(pg.length>0){
+    closeTabel();
+    html+=`<div class="doc-section-title">I. Pilihan Ganda</div><div class="doc-petunjuk">Berilah tanda silang (X) pada huruf jawaban yang paling benar!</div>`;
+    openTabel();
+    pg.forEach((item,i)=>{ html+=buildSoalRow({type:'pg',item,no:i+1}); });
+    closeTabel();
   }
-  if(pageBlocks.length>0)halamanSoal.push(renderPage(isFirstPage?headerHtml:'',pageBlocks));
-  if(!halamanSoal.length)halamanSoal.push(headerHtml+'<p style="padding:20px;color:#999;">Tidak ada soal.</p>');
+  if(isian.length>0){
+    closeTabel();
+    html+=`<div class="doc-section-title">II. Isian Singkat</div><div class="doc-petunjuk">Isilah titik-titik berikut dengan jawaban yang tepat!</div>`;
+    openTabel();
+    isian.forEach((item,i)=>{ html+=buildSoalRow({type:'isian',item,no:pg.length+i+1}); });
+    closeTabel();
+  }
+  if(uraian.length>0){
+    closeTabel();
+    html+=`<div class="doc-section-title">III. Uraian</div><div class="doc-petunjuk">Jawablah pertanyaan berikut dengan lengkap dan benar!</div>`;
+    openTabel();
+    uraian.forEach((item,i)=>{ html+=buildSoalRow({type:'uraian',item,no:pg.length+isian.length+i+1}); });
+    closeTabel();
+  }
+
+  if(!html){html=headerHtml+'<p style="padding:20px;color:#999;">Tidak ada soal.</p>';}
+  halamanSoal=[html]; // selalu 1 "halaman" preview, page-break diatur CSS
   renderKunci(data,pg,isian,uraian);
 }
 
@@ -992,36 +1005,47 @@ function downloadKunci(){
 ════════════════════════════════════════════ */
 function exportPDF(){
   if(!soalData){alert('Generate soal terlebih dahulu.');return;}
-  const box=document.getElementById('previewBox');
-  const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');
-  const w=pdf.internal.pageSize.getWidth();
-  const pageH=pdf.internal.pageSize.getHeight();
-  let chain=Promise.resolve();
-  halamanSoal.forEach((html,idx)=>{
-    chain=chain.then(()=>{
-      box.innerHTML=html;
-      return html2canvas(box,{scale:2,useCORS:true,backgroundColor:'#ffffff',width:794,windowWidth:794});
-    }).then(canvas=>{
-      if(idx>0)pdf.addPage();
-      const imgData=canvas.toDataURL('image/png');
-      const imgH=(canvas.height*w)/canvas.width;
-      // Hanya tambah halaman baru jika konten melebihi 1 halaman A4
-      if(imgH<=pageH){
-        pdf.addImage(imgData,'PNG',0,0,w,imgH);
-      } else {
-        let posY=0;
-        while(posY<imgH){
-          if(posY>0)pdf.addPage();
-          pdf.addImage(imgData,'PNG',0,-posY,w,imgH);
-          posY+=pageH;
-        }
-      }
-    });
-  });
-  chain.then(()=>{
-    showPage(currentPage);
-    pdf.save(`Soal_${document.getElementById('mataPelajaran').value}_Kelas${document.getElementById('kelas').value}.pdf`);
-  });
+  const mapel=document.getElementById('mataPelajaran').value;
+  const kelas=document.getElementById('kelas').value;
+  const konten=document.getElementById('previewBox').innerHTML;
+
+  const printWin=window.open('','_blank');
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>Soal_${mapel}_Kelas${kelas}</title>
+  <style>
+    @page{size:A4;margin:15mm 20mm 15mm 22mm;}
+    *{box-sizing:border-box;}
+    body{font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.55;color:#000;margin:0;padding:0;}
+    table{border-collapse:collapse;width:100%;}
+    td{vertical-align:top;}
+    .doc-header-table td{vertical-align:middle;padding:3px 5px;}
+    .doc-logo-cell{width:70px;text-align:center;}
+    .doc-logo-cell img{width:60px;height:60px;object-fit:contain;}
+    .doc-title-cell{text-align:center;}
+    .doc-ujian-title{font-size:11pt;font-weight:bold;text-transform:uppercase;}
+    .doc-school-name{font-size:14pt;font-weight:900;text-transform:uppercase;}
+    .doc-tahun{font-size:10pt;}
+    .doc-header-line{border-top:3px solid #000;border-bottom:3px solid #000;height:4px;margin:4pt 0 8pt;}
+    .doc-identitas-table{width:100%;font-size:10.5pt;margin-bottom:2pt;}
+    .id-label{width:105pt;} .id-sep{width:10pt;} .id-value{border-bottom:1px solid #333;min-width:80pt;}
+    .doc-identitas-line{border-top:3px solid #000;margin:6pt 0 10pt;}
+    .doc-section-title{font-weight:bold;text-decoration:underline;font-size:11pt;margin:10pt 0 2pt;}
+    .doc-petunjuk{font-style:italic;font-size:10pt;margin-bottom:5pt;}
+    .doc-soal-table{width:100%;border-collapse:collapse;}
+    .soal-no{width:22pt;vertical-align:top;padding-top:1pt;}
+    .opsi-table{width:100%;border-collapse:collapse;margin-top:2pt;}
+    .opsi-label{width:22pt;} .opsi-teks{width:44%;}
+    .isian-garis{display:inline-block;border-bottom:1px solid #000;width:55%;min-width:120pt;}
+    .uraian-box{border:1px solid #bbb;min-height:50pt;width:100%;margin-top:3pt;}
+    img{max-width:100%;}
+  </style>
+  </head><body>${konten}</body></html>`);
+  printWin.document.close();
+  setTimeout(()=>{
+    printWin.focus();
+    printWin.print();
+    printWin.close();
+  },500);
 }
 
 /* ════════════════════════════════════════════
