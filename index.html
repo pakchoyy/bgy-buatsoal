@@ -4,6 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Bantu Guru Yuk | Buat Soal</title>
+<link rel="icon" href="guru-cibisd2.png" sizes="192x192" type="image/png"/>
+<link rel="shortcut icon" href="guru-cibisd2.png" type="image/png"/>
+<link rel="apple-touch-icon" href="guru-cibisd2.png"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#34d399"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -55,29 +60,50 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height
 .modal-skip:hover{color:#64748b;}
 .key-saved{font-size:.72rem;color:#10b981;margin-top:6px;display:none;}
 
+/* ══ LOADING SCREEN ══ */
+#loadingScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--grad);display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-family:sans-serif;z-index:99999;}
+#loadingScreen img{width:64px;margin-bottom:14px;border-radius:16px;}
+#loadingScreen .ls-title{font-size:1.3rem;font-weight:800;letter-spacing:1px;}
+#loadingScreen .ls-sub{font-size:.8rem;margin-top:6px;opacity:.85;}
+.ls-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-top:18px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ══ INSTALL POPUP ══ */
+#installPopup{position:fixed;top:-80px;left:0;right:0;background:linear-gradient(90deg,#34d399,#3b82f6);color:#fff;padding:12px 16px;text-align:center;transition:.4s;z-index:9998;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;}
+#installPopup.show{top:0;}
+#installPopup button{border:none;border-radius:8px;padding:5px 14px;font-weight:700;cursor:pointer;font-size:.8rem;}
+.btn-install{background:#fff;color:#3b82f6;}
+.btn-install-close{background:rgba(255,255,255,.2);color:#fff;}
+
+/* ══ NAVBAR ══ */
+.navbar{background:transparent;padding:6px 22px;display:flex;gap:6px;}
+.navbar a{display:inline-block;padding:5px 14px;font-weight:600;cursor:pointer;border-radius:20px;background:rgba(255,255,255,.15);color:var(--text);font-size:.76rem;border:1px solid var(--border);transition:all .2s;text-decoration:none;}
+.navbar a.active{background:var(--grad);color:#fff;border-color:transparent;}
+body.dark .navbar a{background:rgba(255,255,255,.07);color:#cbd5e1;}
+body.dark .navbar a.active{background:var(--grad);color:#fff;}
+
 /* ══ HEADER ══ */
 header{
-  position:sticky;top:0;z-index:100;background:#fff;
+  position:sticky;top:0;z-index:100;background:var(--grad);
   padding:11px 22px;display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 2px 12px rgba(0,0,0,.08);border-bottom:1px solid #e2e8f0;
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
 }
-body.dark header{background:#1e293b;border-bottom-color:#334155;}
+body.dark header{background:linear-gradient(135deg,#1e3a5f,#1e293b);}
+.header-brand{display:flex;align-items:center;gap:10px;}
+.header-brand img{width:36px;height:36px;border-radius:10px;}
 .header-brand h1{
-  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;
-  background:var(--grad);-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;background-clip:text;
+  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;color:#fff;
 }
-body.dark .header-brand h1{-webkit-text-fill-color:#f1f5f9;background:none;}
-.header-brand p{font-size:.68rem;color:var(--text-light);margin-top:1px;}
+.header-brand p{font-size:.68rem;color:rgba(255,255,255,.85);margin-top:1px;}
 .header-right{display:flex;align-items:center;gap:7px;}
-.version-badge{font-size:.64rem;background:var(--gray-100);color:var(--text-light);padding:2px 7px;border-radius:99px;border:1px solid var(--border);}
-body.dark .version-badge{background:#374151;color:#94a3b8;}
+.version-badge{font-size:.64rem;background:rgba(255,255,255,.2);color:#fff;padding:2px 7px;border-radius:99px;border:1px solid rgba(255,255,255,.3);}
+.free-badge{font-size:.64rem;background:rgba(255,215,0,.25);color:#ffd700;padding:2px 7px;border-radius:99px;border:1px solid rgba(255,215,0,.4);font-weight:700;}
 .btn-apikey{
   font-size:.75rem;padding:5px 11px;border-radius:99px;
-  background:linear-gradient(135deg,#34d399,#3b82f6);color:#fff;
-  border:none;cursor:pointer;font-weight:600;transition:all .2s;
+  background:rgba(255,255,255,.2);color:#fff;
+  border:1px solid rgba(255,255,255,.3);cursor:pointer;font-weight:600;transition:all .2s;
 }
-.btn-apikey:hover{opacity:.88;}
+.btn-apikey:hover{background:rgba(255,255,255,.3);}
 #darkToggle{
   background:var(--gray-100);border:1px solid var(--border);color:var(--text);
   padding:5px 12px;border-radius:99px;cursor:pointer;font-size:.76rem;font-weight:600;transition:all .2s;
@@ -236,20 +262,75 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
 </head>
 <body>
 
-<!-- Modal API Key dihapus — API Key aman di Netlify Environment Variable -->
+<!-- ══ LOADING SCREEN ══ -->
+<div id="loadingScreen">
+  <img src="guru-cibisd2.png" alt="Logo"/>
+  <div class="ls-title">Bantu Guru Yuk</div>
+  <div class="ls-sub">Kurikulum Merdeka Based · Powered by AI</div>
+  <div class="ls-spinner"></div>
+</div>
+
+<!-- ══ INSTALL POPUP ══ -->
+<div id="installPopup">
+  <span>📲 Install aplikasi Bantu Guru Yuk</span>
+  <button class="btn-install" onclick="installApp()">Install</button>
+  <button class="btn-install-close" onclick="closeInstall()">✕</button>
+</div>
 
 <!-- ══ HEADER ══ -->
 <header>
   <div class="header-brand">
-    <h1>📚 Bantu Guru Yuk | Buat Soal</h1>
-    <p>Kurikulum Merdeka Based &bull; Powered by AI</p>
+    <img src="guru-cibisd2.png" alt="Logo"/>
+    <div>
+      <h1>Bantu Guru Yuk | Buat Soal</h1>
+      <p>Kurikulum Merdeka Based &bull; Powered by AI</p>
+    </div>
   </div>
   <div class="header-right">
     <span class="version-badge">v26.3.9c</span>
+    <span class="free-badge">Free</span>
     <button id="darkToggle" onclick="toggleDark()">🌙 Dark</button>
   </div>
 </header>
 
+<!-- ══ NAVBAR ══ -->
+<nav class="navbar">
+  <a onclick="showTab('home',this)" class="active">🏠 Home</a>
+  <a onclick="showTab('tentang',this)">ℹ️ Tentang</a>
+  <a onclick="showTab('kontak',this)">📬 Kontak</a>
+</nav>
+
+<!-- ══ TAB TENTANG ══ -->
+<div id="tab-tentang" style="display:none;max-width:760px;margin:20px auto;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;">
+  <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">ℹ️ Tentang Aplikasi</h3>
+  <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:10px;"><b>Bantu Guru Yuk v26.3.9c (Free Version)</b> adalah generator soal berbasis AI yang membantu guru membuat soal ujian secara cepat, rapi, dan siap cetak.</p>
+  <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:10px;">Dirancang khusus untuk mendukung <b>Kurikulum Merdeka</b> untuk jenjang SD.</p>
+  <h4 style="font-size:.85rem;font-weight:700;margin:12px 0 6px;">✨ Fitur Utama:</h4>
+  <ul style="font-size:.83rem;color:var(--text);line-height:2;padding-left:18px;">
+    <li>Generate soal otomatis via Gemini AI</li>
+    <li>Pilihan Ganda, Isian Singkat, dan Uraian</li>
+    <li>Sesuai Taksonomi Bloom (C1–C6)</li>
+    <li>Export PDF &amp; Word siap cetak</li>
+    <li>Kunci jawaban otomatis</li>
+    <li>Support Kurikulum Merdeka</li>
+  </ul>
+  <h4 style="font-size:.85rem;font-weight:700;margin:12px 0 4px;">👨‍💻 Pengembang:</h4>
+  <p style="font-size:.83rem;color:var(--text);">Pak Choyy — <span style="color:var(--blue);">pakchoyy.github.io</span></p>
+</div>
+
+<!-- ══ TAB KONTAK ══ -->
+<div id="tab-kontak" style="display:none;max-width:760px;margin:20px auto;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;">
+  <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">📬 Kontak</h3>
+  <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:16px;">Untuk info lebih lanjut, bantuan penggunaan, atau menyampaikan kritik dan saran:</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="window.open('https://wa.me/6289530713597')" style="background:#25D366;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;">💬 WhatsApp</button>
+    <button onclick="window.open('https://tiktok.com/@pak.choyy')" style="background:#000;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;">🎵 TikTok</button>
+  </div>
+  <p style="margin-top:14px;font-size:.78rem;color:var(--text-light);">Masukan dan saran Anda sangat membantu pengembangan aplikasi ini.</p>
+</div>
+
+<!-- ══ TAB HOME ══ -->
+<div id="tab-home">
 <main>
   <!-- ══ KOLOM KIRI ══ -->
   <div class="col-form">
@@ -379,12 +460,12 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
   <div class="col-preview preview-wrap">
     <div class="card" style="padding:10px 14px;margin-bottom:12px;">
       <div class="export-bar">
-        <button class="btn btn-secondary" onclick="exportPDF()">📄 PDF</button>
-        <button class="btn btn-secondary" onclick="exportWord()">📝 Word</button>
+        <button class="btn btn-secondary" onclick="exportPDF()">💾 Save PDF</button>
+        <button class="btn btn-secondary" onclick="exportWord()">💾 Save Word</button>
         <button class="btn btn-secondary" onclick="copyContent()">📋 Copy</button>
         <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
         <button class="btn btn-secondary" id="btnKunci" onclick="toggleKunci()">🔑 Kunci</button>
-        <button class="btn btn-secondary" onclick="downloadKunci()">⬇️ Unduh Kunci</button>
+        <button class="btn btn-secondary" onclick="downloadKunci()">💾 Kunci PDF</button>
       </div>
     </div>
 
@@ -407,6 +488,7 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
     </div>
   </div>
 </main>
+</div><!-- end tab-home -->
 
 <footer>
   <div class="footer-title">© 2026 Bantu Guru Yuk by Pak.Choyy</div>
@@ -514,27 +596,72 @@ let soalData=null,kunciVisible=false;
 let logos={logo1:null,logo2:null};
 let halamanSoal=[],currentPage=0;
 const SOAL_PER_HALAMAN=5;
-// API Key aman di Netlify — tidak perlu disimpan di sini
+let GEMINI_API_KEY='';
+let deferredInstallPrompt=null;
 
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
 (function init(){
+  // Hapus loading screen setelah halaman siap
+  window.addEventListener('load',()=>{
+    const ls=document.getElementById('loadingScreen');
+    if(ls){ls.style.opacity='0';ls.style.transition='opacity .4s';setTimeout(()=>ls.remove(),400);}
+  });
   // Theme
   const saved=localStorage.getItem('theme');
   if(saved==='dark'){document.body.classList.add('dark');document.getElementById('darkToggle').textContent='☀️ Light';}
   // Tanggal
   document.getElementById('tanggal').valueAsDate=new Date();
   // API Key dari localStorage
-  // API Key dikelola Netlify Function
+  const savedKey=localStorage.getItem('gemini_api_key');
+  if(savedKey){GEMINI_API_KEY=savedKey;}
   // Form
   renderMapelOptions();renderMateriChecklist();
+  // Install prompt
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredInstallPrompt=e;
+    if(!sessionStorage.getItem('installClosed')){
+      setTimeout(()=>document.getElementById('installPopup').classList.add('show'),2000);
+    }
+  });
 })();
 
 /* ════════════════════════════════════════════
-   MODAL API KEY
+   INSTALL PWA
 ════════════════════════════════════════════ */
-// Fungsi modal dihapus
+function installApp(){
+  if(deferredInstallPrompt){deferredInstallPrompt.prompt();deferredInstallPrompt=null;}
+  closeInstall();
+}
+function closeInstall(){
+  document.getElementById('installPopup').classList.remove('show');
+  sessionStorage.setItem('installClosed','yes');
+}
+
+/* ════════════════════════════════════════════
+   NAVBAR TABS
+════════════════════════════════════════════ */
+function showTab(tab,el){
+  document.getElementById('tab-home').style.display=tab==='home'?'block':'none';
+  document.getElementById('tab-tentang').style.display=tab==='tentang'?'block':'none';
+  document.getElementById('tab-kontak').style.display=tab==='kontak'?'block':'none';
+  document.querySelectorAll('.navbar a').forEach(a=>a.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+/* ════════════════════════════════════════════
+   MODAL API KEY (tetap untuk opsional)
+════════════════════════════════════════════ */
+function showModal(){document.getElementById('modalOverlay').style.display='flex';}
+function simpanApiKey(){
+  const key=document.getElementById('inputApiKey').value.trim();
+  if(!key){alert('Masukkan API Key terlebih dahulu.');return;}
+  GEMINI_API_KEY=key;
+  localStorage.setItem('gemini_api_key',key);
+  document.getElementById('modalOverlay').style.display='none';
+}
+function skipApiKey(){document.getElementById('modalOverlay').style.display='none';}
 
 /* ════════════════════════════════════════════
    DARK MODE
@@ -605,6 +732,7 @@ function getJudulUjian(){
    GENERATE — langsung fetch Gemini API
 ════════════════════════════════════════════ */
 async function handleGenerate(){
+  if(!GEMINI_API_KEY){showModal();return;}
   const materi=getMateriTerpilih();
   if(!materi){showError('Pilih minimal satu materi.');return;}
   const kesulitan=getKesulitanTerpilih();
@@ -808,12 +936,44 @@ function downloadKunci(){
   if(!soalData){alert('Generate soal terlebih dahulu.');return;}
   const pg=soalData.pilihanGanda||[];const isian=soalData.isian||[];const uraian=soalData.uraian||[];
   const mapel=document.getElementById('mataPelajaran').value;const kelas=document.getElementById('kelas').value;
-  let txt=`KUNCI JAWABAN\nMata Pelajaran: ${mapel} | Kelas: ${kelas}\n${'='.repeat(40)}\n\n`;
-  if(pg.length>0){txt+=`I. PILIHAN GANDA\n`;pg.forEach((item,i)=>{txt+=`${i+1}. ${item.jawaban}\n`;});txt+=`\n`;}
-  if(isian.length>0){txt+=`II. ISIAN SINGKAT\n`;isian.forEach((item,i)=>{txt+=`${pg.length+i+1}. ${item.jawaban}\n`;});txt+=`\n`;}
-  if(uraian.length>0){txt+=`III. URAIAN\n`;uraian.forEach((item,i)=>{txt+=`${pg.length+isian.length+i+1}. ${item.jawaban}\n`;});}
-  const blob=new Blob([txt],{type:'text/plain'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`Kunci_${mapel}_Kelas${kelas}.txt`;a.click();URL.revokeObjectURL(url);
+  const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');
+  const margin=15;let y=margin;const lw=pdf.internal.pageSize.getWidth()-margin*2;
+  pdf.setFont('helvetica','bold');pdf.setFontSize(13);
+  pdf.text('KUNCI JAWABAN',pdf.internal.pageSize.getWidth()/2,y,{align:'center'});y+=7;
+  pdf.setFontSize(10);pdf.setFont('helvetica','normal');
+  pdf.text(`Mata Pelajaran: ${mapel}  |  Kelas: ${kelas}`,pdf.internal.pageSize.getWidth()/2,y,{align:'center'});y+=5;
+  pdf.setLineWidth(0.5);pdf.line(margin,y,margin+lw,y);y+=7;
+  if(pg.length>0){
+    pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('I. PILIHAN GANDA',margin,y);y+=5;
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+    const cols=5;const cw=lw/cols;
+    pg.forEach((item,i)=>{
+      const col=i%cols;const row=Math.floor(i/cols);
+      const x=margin+col*cw;const yy=y+row*5;
+      if(yy>pdf.internal.pageSize.getHeight()-margin){pdf.addPage();y=margin;}
+      pdf.text(`${i+1}. ${item.jawaban}`,x,yy);
+    });
+    y+=Math.ceil(pg.length/cols)*5+5;
+  }
+  if(isian.length>0){
+    pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('II. ISIAN SINGKAT',margin,y);y+=5;
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+    isian.forEach((item,i)=>{
+      const lines=pdf.splitTextToSize(`${pg.length+i+1}. ${item.jawaban}`,lw);
+      if(y+lines.length*4>pdf.internal.pageSize.getHeight()-margin){pdf.addPage();y=margin;}
+      pdf.text(lines,margin,y);y+=lines.length*4+2;
+    });y+=3;
+  }
+  if(uraian.length>0){
+    pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('III. URAIAN',margin,y);y+=5;
+    pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+    uraian.forEach((item,i)=>{
+      const lines=pdf.splitTextToSize(`${pg.length+isian.length+i+1}. ${item.jawaban}`,lw);
+      if(y+lines.length*4>pdf.internal.pageSize.getHeight()-margin){pdf.addPage();y=margin;}
+      pdf.text(lines,margin,y);y+=lines.length*4+3;
+    });
+  }
+  pdf.save(`Kunci_${mapel}_Kelas${kelas}.pdf`);
 }
 
 /* ════════════════════════════════════════════
@@ -856,7 +1016,7 @@ function exportWord(){
     <tr><td>Kelas / Semester</td><td>:</td><td style="border-bottom:1px solid #333;">${kelas} / ${semStr}</td><td></td><td>No. Absen</td><td>:</td><td style="border-bottom:1px solid #333;">&nbsp;</td></tr>
     <tr><td>Tanggal</td><td>:</td><td style="border-bottom:1px solid #333;">${tanggal}</td><td></td><td>Nilai</td><td>:</td><td style="border-bottom:1px solid #333;">&nbsp;</td></tr>
   </table>
-  <div style="border-top:1px solid black;margin:8pt 0 10pt;"></div>`;
+  <div style="border-top:3px solid black;margin:8pt 0 10pt;"></div>`;
 
   if(pg.length>0){
     body+=`<p style="font-family:Times New Roman,serif;font-size:11pt;font-weight:bold;text-decoration:underline;margin:12pt 0 4pt;">I. Pilihan Ganda</p>`;
@@ -882,7 +1042,7 @@ function exportWord(){
   const wordHtml=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>body{font-family:"Times New Roman",serif;font-size:12pt;margin:2cm;}table{border-collapse:collapse;}td{vertical-align:top;}p{margin:3pt 0;}</style></head><body>${body}</body></html>`;
   const blob=new Blob(['\ufeff',wordHtml],{type:'application/msword'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`Soal_${mapel}_Kelas${kelas}.doc`;a.click();URL.revokeObjectURL(url);
+  a.href=url;a.download=`Soal_${mapel}_Kelas${kelas}.docx`;a.click();URL.revokeObjectURL(url);
 }
 
 /* ════════════════════════════════════════════
