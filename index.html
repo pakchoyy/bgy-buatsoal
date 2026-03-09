@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Bantu Guru Yuk | Buat Soal v26.3.9b</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --grad:linear-gradient(135deg,#34d399,#60a5fa,#3b82f6);
+  --white:#ffffff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
+  --gray-700:#334155;--blue:#3b82f6;--radius:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.10);--shadow-lg:0 8px 40px rgba(0,0,0,.15);
+  --bg:var(--grad);--card-bg:var(--white);--text:var(--gray-700);
+  --text-light:#64748b;--border:var(--gray-200);--input-bg:var(--gray-50);
+}
+body.dark{
+  --bg:#0f172a;--card-bg:#1f2937;--text:#f1f5f9;
+  --text-light:#94a3b8;--border:#374151;--input-bg:#111827;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;color:var(--text);transition:background .3s,color .3s;display:flex;flex-direction:column;}
+
+/* ── HEADER APP ── */
+header{
+  position:sticky;top:0;z-index:100;background:#fff;
+  padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 12px rgba(0,0,0,.08);border-bottom:1px solid #e2e8f0;
+}
+body.dark header{background:#1e293b;border-bottom-color:#334155;}
+.header-brand h1{
+  font-size:1.2rem;font-weight:800;letter-spacing:-.5px;
+  background:var(--grad);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+}
+body.dark .header-brand h1{-webkit-text-fill-color:#f1f5f9;background:none;}
+.header-brand p{font-size:.7rem;color:var(--text-light);margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.version-badge{font-size:.66rem;background:var(--gray-100);color:var(--text-light);padding:3px 8px;border-radius:99px;border:1px solid var(--border);}
+body.dark .version-badge{background:#374151;color:#94a3b8;}
+#darkToggle{
+  background:var(--gray-100);border:1px solid var(--border);color:var(--text);
+  padding:6px 13px;border-radius:99px;cursor:pointer;font-size:.78rem;font-weight:600;
+  transition:all .2s;display:flex;align-items:center;gap:5px;
+}
+body.dark #darkToggle{background:#374151;color:#f1f5f9;border-color:#4b5563;}
+
+/* ── MAIN ── */
+main{
+  display:grid;grid-template-columns:375px 1fr;
+  gap:22px;padding:22px;max-width:1440px;margin:0 auto;
+  align-items:start;flex:1;width:100%;
+}
+@media(max-width:960px){
+  main{grid-template-columns:1fr;padding:12px;gap:14px;}
+}
+
+/* ── CARD ── */
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;transition:background .3s;}
+.card-title{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+
+/* ── FORM ── */
+.form-group{margin-bottom:12px;}
+label{display:block;font-size:.72rem;font-weight:600;color:var(--text-light);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+input,select,textarea{
+  width:100%;padding:8px 11px;border:2px solid var(--border);border-radius:10px;
+  font-size:.85rem;color:var(--text);background:var(--input-bg);
+  transition:border-color .2s,background .3s;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);}
+textarea{resize:vertical;min-height:60px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+.school-info{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.school-info h3{font-size:.76rem;font-weight:700;color:var(--text-light);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* Logo upload */
+.logo-upload-area{
+  border:2px dashed var(--border);border-radius:10px;padding:8px;
+  text-align:center;cursor:pointer;transition:border-color .2s;position:relative;
+  min-height:64px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;
+}
+.logo-upload-area:hover{border-color:var(--blue);}
+.logo-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;padding:0;}
+.logo-preview-thumb{max-height:46px;max-width:80px;border-radius:4px;object-fit:contain;display:none;}
+.logo-upload-hint{font-size:.68rem;color:var(--text-light);line-height:1.4;}
+
+/* Materi checklist */
+.materi-box{border:2px solid var(--border);border-radius:10px;padding:7px 9px;max-height:170px;overflow-y:auto;background:var(--input-bg);}
+.materi-box .cb-label{
+  display:flex;align-items:flex-start;gap:6px;font-size:.82rem;color:var(--text);
+  font-weight:normal;cursor:pointer;padding:3px 0;border-bottom:1px solid var(--border);
+  text-transform:none;letter-spacing:0;
+}
+.materi-box .cb-label:last-child{border-bottom:none;}
+.materi-box input[type=checkbox]{width:14px;height:14px;min-width:14px;padding:0;margin-top:2px;accent-color:var(--blue);}
+.materi-empty{font-size:.78rem;color:var(--text-light);padding:6px 0;text-align:center;}
+.btn-pilih-semua{font-size:.7rem;padding:4px 9px;background:var(--gray-100);color:var(--text);border:1px solid var(--border);border-radius:7px;cursor:pointer;margin-bottom:6px;font-weight:600;transition:background .2s;}
+.btn-pilih-semua:hover{background:var(--gray-200);}
+body.dark .btn-pilih-semua{background:#374151;color:#f1f5f9;}
+
+/* Tingkat kesulitan */
+.kesulitan-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;}
+.kesulitan-grid label{
+  display:flex;align-items:center;gap:3px;font-size:.75rem;color:var(--text);font-weight:normal;
+  text-transform:none;letter-spacing:0;background:var(--input-bg);border:1px solid var(--border);
+  border-radius:7px;padding:3px 8px;cursor:pointer;transition:all .2s;
+}
+.kesulitan-grid label:hover{border-color:var(--blue);}
+.kesulitan-grid input[type=checkbox]{width:12px;height:12px;padding:0;accent-color:var(--blue);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;border:none;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s;}
+.btn-primary{background:var(--grad);color:#fff;width:100%;justify-content:center;padding:11px;font-size:.93rem;border-radius:12px;box-shadow:0 4px 16px rgba(59,130,246,.25);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.35);}
+.btn-primary:disabled{opacity:.7;cursor:not-allowed;transform:none;}
+.btn-secondary{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--border);}
+body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
+.btn-secondary:hover{background:var(--gray-200);}
+.export-bar{display:flex;flex-wrap:wrap;gap:6px;}
+
+/* Spinner */
+.spinner{width:15px;height:15px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Error */
+.error-box{background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:9px 12px;border-radius:10px;margin-top:8px;font-size:.81rem;display:none;}
+
+/* ── PREVIEW ── */
+.preview-wrap{position:relative;}
+
+.page-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:11px;}
+.page-nav button{
+  background:var(--card-bg);border:2px solid var(--border);color:var(--text);
+  width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;
+}
+.page-nav button:hover:not(:disabled){border-color:var(--blue);color:var(--blue);}
+.page-nav button:disabled{opacity:.3;cursor:not-allowed;}
+.page-info{font-size:.8rem;color:var(--text-light);font-weight:600;min-width:76px;text-align:center;}
+
+#previewBox{
+  background:#fff;color:#000;
+  padding:14mm 16mm 14mm 18mm;
+  max-width:794px;margin:0 auto;
+  border-radius:4px;box-shadow:var(--shadow-lg);
+  min-height:460px;
+  font-family:'Times New Roman',Times,serif;
+  font-size:11pt;line-height:1.55;
+}
+
+/* ── DOKUMEN STYLES ── */
+.doc-header-table{width:100%;border-collapse:collapse;margin-bottom:0;}
+.doc-header-table td{vertical-align:middle;padding:3px 5px;border:none;}
+.doc-logo-cell{width:72px;text-align:center;}
+.doc-logo-cell img{width:62px;height:62px;object-fit:contain;}
+.doc-title-cell{text-align:center;}
+.doc-ujian-title{font-size:11pt;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;font-family:'Times New Roman',serif;}
+.doc-school-name{font-size:14pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:'Times New Roman',serif;margin:3px 0;}
+.doc-tahun{font-size:10pt;font-family:'Times New Roman',serif;}
+.doc-header-line{border-top:3px solid #000;height:0;margin:6px 0 10px;}
+.doc-identitas-line{border-top:1px solid #000;margin:8px 0 10px;}
+
+.doc-identitas-table{width:100%;border-collapse:collapse;margin-bottom:0;font-size:11pt;font-family:'Times New Roman',serif;}
+.doc-identitas-table td{padding:2px 4px;vertical-align:top;}
+.id-label{width:112px;}
+.id-sep{width:10px;text-align:center;}
+.id-value{border-bottom:1px solid #333;min-width:110px;}
+
+.doc-section-title{font-size:11pt;font-weight:bold;font-family:'Times New Roman',serif;margin:13px 0 4px;text-decoration:underline;}
+.doc-petunjuk{font-size:10pt;font-style:italic;margin-bottom:7px;font-family:'Times New Roman',serif;}
+
+.doc-soal-table{width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:11pt;}
+.doc-soal-table td{vertical-align:top;padding:2px 3px;}
+.soal-no{width:22px;white-space:nowrap;}
+.opsi-table{width:100%;border-collapse:collapse;margin-top:2px;}
+.opsi-table td{padding:1px 3px;vertical-align:top;font-size:10.5pt;}
+.opsi-label{width:22px;}
+.opsi-teks{width:44%;}
+
+.isian-garis{display:inline-block;border-bottom:1px solid #333;min-width:170px;width:56%;height:12px;vertical-align:bottom;}
+.uraian-kotak{border:1px solid #bbb;width:100%;height:45px;margin-top:4px;}
+
+/* Kunci */
+#kunciBox{
+  background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;margin-top:14px;max-width:794px;margin-left:auto;margin-right:auto;
+  display:none;transition:background .3s;
+}
+#kunciBox h3{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.kunci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:6px;}
+.kunci-item{background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:.78rem;color:var(--text);}
+.kunci-item strong{color:var(--blue);}
+.kunci-isian,.kunci-uraian{margin-top:11px;}
+.kunci-isian h4,.kunci-uraian h4{font-size:.8rem;font-weight:700;color:var(--text-light);margin-bottom:5px;}
+.kunci-isian ol,.kunci-uraian ol{padding-left:16px;font-size:.8rem;color:var(--text);line-height:1.8;}
+
+.empty-state{text-align:center;padding:48px 20px;color:#94a3b8;font-family:'Segoe UI',sans-serif;}
+.empty-state .icon{font-size:2.6rem;margin-bottom:9px;}
+.empty-state p{font-size:.9rem;}
+
+/* ── FOOTER ── */
+footer{background:linear-gradient(135deg,#1e3a5f,#0f5132);color:#fff;text-align:center;padding:16px 20px 12px;margin-top:auto;}
+footer .footer-title{font-size:.88rem;font-weight:700;margin-bottom:3px;}
+footer .footer-sub{font-size:.72rem;color:rgba(255,255,255,.7);}
+
+/* ── RESPONSIVE HP ── */
+@media(max-width:960px){
+  main{grid-template-columns:1fr;padding:12px;gap:14px;}
+  #previewBox{padding:8mm 8mm 8mm 10mm;font-size:10pt;}
+  .export-bar{gap:5px;}
+  .btn{padding:7px 11px;font-size:.77rem;}
+  .doc-school-name{font-size:12pt;}
+  .doc-ujian-title{font-size:10pt;}
+  .page-nav button{width:30px;height:30px;}
+}
+@media(max-width:480px){
+  #previewBox{padding:5mm;font-size:9.5pt;}
+  .doc-school-name{font-size:11pt;}
+  header{padding:10px 14px;}
+  .header-brand h1{font-size:1.05rem;}
+  .version-badge{display:none;}
+  .kesulitan-grid label{font-size:.7rem;padding:2px 6px;}
+}
+
+/* Print */
+@page{size:A4;margin:15mm;}
+@media print{
+  header,footer,.col-form,.export-bar,#kunciBox,.page-nav{display:none!important;}
+  main{display:block;padding:0;}
+  #previewBox{box-shadow:none;padding:0;max-width:100%;border-radius:0;}
+  body{background:#fff!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="header-brand">
+    <h1>📚 Bantu Guru Yuk | Buat Soal</h1>
+    <p>Kurikulum Merdeka Based &bull; Powered by AI</p>
+  </div>
+  <div class="header-right">
+    <span class="version-badge">v26.3.9b</span>
+    <button id="darkToggle" onclick="toggleDark()">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+  <!-- ══ KOLOM KIRI ══ -->
+  <div class="col-form">
+    <div class="card">
+
+      <div class="school-info">
+        <h3>📋 Info Lembar Soal</h3>
+
+        <!-- Logo 2 kolom -->
+        <div class="row-2" style="margin-bottom:9px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Logo Sekolah (Kiri)</label>
+            <div class="logo-upload-area">
+              <input type="file" id="logoInput1" accept="image/*" onchange="handleLogo(event,'logo1','thumb1','hint1','hapus1')"/>
+              <img id="thumb1" class="logo-preview-thumb" alt=""/>
+              <div id="hint1" class="logo-upload-hint">🖼️ Upload<br><small>PNG/JPG</small></div>
+            </div>
+            <button id="hapus1" class="btn btn-secondary" style="margin-top:3px;font-size:.68rem;padding:3px 7px;display:none;" onclick="hapusLogo('logoInput1','logo1','thumb1','hint1','hapus1')">✕ Hapus</button>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Logo Pemda (Kanan)</label>
+            <div class="logo-upload-area">
+              <input type="file" id="logoInput2" accept="image/*" onchange="handleLogo(event,'logo2','thumb2','hint2','hapus2')"/>
+              <img id="thumb2" class="logo-preview-thumb" alt=""/>
+              <div id="hint2" class="logo-upload-hint">🖼️ Upload<br><small>PNG/JPG</small></div>
+            </div>
+            <button id="hapus2" class="btn btn-secondary" style="margin-top:3px;font-size:.68rem;padding:3px 7px;display:none;" onclick="hapusLogo('logoInput2','logo2','thumb2','hint2','hapus2')">✕ Hapus</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nama Sekolah</label>
+          <input type="text" id="namaSekolah" placeholder="SDN Maju Jaya 01" value="SDN Maju Jaya 01"/>
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Jenis Ujian</label>
+            <select id="jenisUjian">
+              <option value="Ulangan Harian">Ulangan Harian</option>
+              <option value="Sumatif Tengah Semester">Sumatif Tengah Semester</option>
+              <option value="Sumatif Akhir Semester">Sumatif Akhir Semester</option>
+              <option value="Sumatif Akhir Jenjang">Sumatif Akhir Jenjang</option>
+              <option value="Latihan">Latihan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tahun Pelajaran</label>
+            <input type="text" id="tahunPelajaran" value="2025/2026"/>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Semester</label>
+            <select id="semester" onchange="onSemesterChange()">
+              <option value="1">1 (Ganjil)</option>
+              <option value="2">2 (Genap)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" id="tanggal"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pengaturan Soal -->
+      <div class="card-title"><span>⚙️</span> Pengaturan Soal</div>
+
+      <div class="form-group">
+        <label>Kelas</label>
+        <select id="kelas" onchange="onKelasChange()">
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3" selected>3</option><option value="4">4</option>
+          <option value="5">5</option><option value="6">6</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <select id="mataPelajaran" onchange="onMapelChange()"></select>
+      </div>
+
+      <div class="form-group">
+        <label>Materi</label>
+        <button class="btn-pilih-semua" type="button" onclick="pilihSemua()">☑ Pilih Semua</button>
+        <div class="materi-box" id="materiBox">
+          <div class="materi-empty">Pilih kelas dan mata pelajaran.</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Topik Tambahan (Opsional)</label>
+        <textarea id="topikTambahan" placeholder="Contoh: fokus soal cerita, konteks lingkungan..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Tingkat Kesulitan (Taksonomi Bloom)</label>
+        <div class="kesulitan-grid">
+          <label><input type="checkbox" class="cb-kesulitan" value="C1-Mengingat" checked/> C1</label>
+          <label><input type="checkbox" class="cb-kesulitan" value="C2-Memahami" checked/> C2</label>
+          <label><input type="checkbox" class="cb-kesulitan" value="C3-Mengaplikasikan" checked/> C3</label>
+          <label><input type="checkbox" class="cb-kesulitan" value="C4-Menganalisis"/> C4</label>
+          <label><input type="checkbox" class="cb-kesulitan" value="C5-Mengevaluasi"/> C5</label>
+          <label><input type="checkbox" class="cb-kesulitan" value="C6-Mencipta"/> C6</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Jumlah Soal per Tipe</label>
+        <div class="row-3">
+          <div>
+            <label>PG <span id="opsiNote" style="font-size:.68rem;color:#3b82f6;">(A–D)</span></label>
+            <input type="number" id="jmlPG" min="0" max="40" value="10"/>
+          </div>
+          <div>
+            <label>Isian</label>
+            <input type="number" id="jmlIsian" min="0" max="20" value="5"/>
+          </div>
+          <div>
+            <label>Uraian</label>
+            <input type="number" id="jmlUraian" min="0" max="10" value="3"/>
+          </div>
+        </div>
+      </div>
+
+      <div id="errorBox" class="error-box"></div>
+
+      <button class="btn btn-primary" id="btnGenerate" onclick="handleGenerate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnLabel">✨ Generate Soal</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ══ KOLOM KANAN ══ -->
+  <div class="col-preview preview-wrap">
+
+    <div class="card" style="padding:11px 15px;margin-bottom:13px;">
+      <div class="export-bar">
+        <button class="btn btn-secondary" onclick="exportPDF()">📄 PDF</button>
+        <button class="btn btn-secondary" onclick="exportWord()">📝 Word</button>
+        <button class="btn btn-secondary" onclick="copyContent()">📋 Copy</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-secondary" id="btnKunci" onclick="toggleKunci()">🔑 Kunci</button>
+        <button class="btn btn-secondary" onclick="downloadKunci()">⬇️ Unduh Kunci</button>
+      </div>
+    </div>
+
+    <div class="page-nav">
+      <button id="btnPrev" onclick="prevPage()" disabled>◀</button>
+      <span class="page-info" id="pageInfo">—</span>
+      <button id="btnNext" onclick="nextPage()" disabled>▶</button>
+    </div>
+
+    <div id="previewBox">
+      <div class="empty-state">
+        <div class="icon">📄</div>
+        <p>Lembar soal tampil di sini setelah Generate Soal.</p>
+      </div>
+    </div>
+
+    <div id="kunciBox">
+      <h3>🔑 Kunci Jawaban</h3>
+      <div id="kunciContent"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-title">© 2026 Bantu Guru Yuk by Pak.Choyy</div>
+  <div class="footer-sub">Kurikulum Merdeka Based &bull; Powered by AI &bull; v26.3.9b</div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════
+   DATABASE MAPEL — Kurikulum Merdeka 2024/2025
+   Berdasarkan Permendikbudristek No.12/2024
+   & BSKAP 046/2025
+════════════════════════════════════════════ */
+const DB_MAPEL = {
+  // Fase A — kelas 1-2: TANPA Bahasa Inggris, TANPA IPAS
+  1:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","PJOK","Seni Musik","Seni Rupa","Seni Tari","Muatan Lokal"],
+  2:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","PJOK","Seni Musik","Seni Rupa","Seni Tari","Muatan Lokal"],
+  // Fase B — kelas 3-4: ada IPAS & Bahasa Inggris
+  3:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","IPAS","PJOK","Seni Musik","Seni Rupa","Seni Tari","Bahasa Inggris","Muatan Lokal"],
+  4:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","IPAS","PJOK","Seni Musik","Seni Rupa","Seni Tari","Bahasa Inggris","Muatan Lokal"],
+  // Fase C — kelas 5-6: IPA & IPS terpisah, ada KKA (pilihan)
+  5:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","IPA","IPS","PJOK","Seni Musik","Seni Rupa","Seni Tari","Bahasa Inggris","Koding & KA","Muatan Lokal"],
+  6:["Pendidikan Agama & Budi Pekerti","Pendidikan Pancasila","Bahasa Indonesia","Matematika","IPA","IPS","PJOK","Seni Musik","Seni Rupa","Seni Tari","Bahasa Inggris","Koding & KA","Muatan Lokal"]
+};
+
+/* ════════════════════════════════════════════
+   DATABASE MATERI per Kelas, Mapel, Semester
+   Fase A (1-2), Fase B (3-4), Fase C (5-6)
+   1 = Ganjil, 2 = Genap
+════════════════════════════════════════════ */
+const DB_MATERI = {
+  1:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Huruf hijaiyah","Dua kalimat syahadat","Doa sehari-hari","Bersuci (thaharah)","Sifat Allah (Al-Khaliq)"],
+      2:["Rukun Islam","Asmaul Husna","Kisah Nabi Adam","Perilaku terpuji (jujur, disiplin)","Doa masuk dan keluar rumah"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Mengenal diri sendiri","Anggota keluarga","Aturan di rumah","Bersyukur kepada Tuhan"],
+      2:["Teman dan persahabatan","Tolong menolong","Hidup bersih","Simbol negara sederhana"]
+    },
+    "Bahasa Indonesia":{
+      1:["Mengenal huruf abjad","Membaca suku kata","Menulis huruf kapital","Kosakata benda sekitar","Menyimak cerita"],
+      2:["Membaca kata sederhana","Kalimat sederhana","Menulis nama sendiri","Teks deskripsi singkat","Berbicara sopan"]
+    },
+    "Matematika":{
+      1:["Bilangan 1–10","Bilangan 11–20","Penjumlahan sampai 10","Pengurangan sampai 10","Membandingkan banyak benda"],
+      2:["Penjumlahan sampai 20","Pengurangan sampai 20","Bangun datar sederhana","Pengukuran panjang tidak baku","Pengenalan waktu (pagi, siang, malam)"]
+    },
+    "PJOK":{
+      1:["Gerak dasar berjalan","Berlari","Melompat","Keseimbangan tubuh"],
+      2:["Melempar dan menangkap","Permainan sederhana","Kebersihan diri","Bagian tubuh"]
+    },
+    "Seni Musik":{
+      1:["Mengenal bunyi dan suara","Lagu anak sederhana","Tepuk tangan berirama"],
+      2:["Menyanyi lagu daerah","Alat musik sederhana","Gerak dan lagu"]
+    },
+    "Seni Rupa":{
+      1:["Menggambar bebas","Mewarnai gambar","Mengenal warna primer"],
+      2:["Kolase sederhana","Stempel dari bahan alam","Karya dari kertas"]
+    },
+    "Seni Tari":{
+      1:["Gerak dasar tari","Menirukan gerak hewan","Gerak berirama"],
+      2:["Tari sederhana daerah","Ekspresi dalam gerak","Tari bersama teman"]
+    },
+    "Muatan Lokal":{
+      1:["Bahasa daerah dasar","Budaya lokal","Permainan tradisional"],
+      2:["Kesenian daerah","Makanan tradisional","Kearifan lokal"]
+    }
+  },
+  2:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Rukun Iman","Asmaul Husna (lanjutan)","Sholat wajib lima waktu","Doa masuk dan keluar masjid"],
+      2:["Kisah Nabi Ibrahim AS","Perilaku jujur dan amanah","Hormat kepada orang tua","Zakat fitrah"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Pancasila","Aturan di sekolah","Hak dan kewajiban siswa"],
+      2:["Keberagaman teman","Gotong royong","Simbol-simbol negara Indonesia"]
+    },
+    "Bahasa Indonesia":{
+      1:["Membaca lancar","Menulis kalimat","Tanda baca titik dan koma","Kosakata baru"],
+      2:["Teks narasi pendek","Menulis cerita singkat","Ejaan yang benar","Puisi anak sederhana"]
+    },
+    "Matematika":{
+      1:["Bilangan sampai 50","Nilai tempat (puluhan dan satuan)","Penjumlahan dua angka","Pengurangan dua angka"],
+      2:["Perkalian 1–5","Pembagian sederhana","Bangun ruang sederhana","Uang dan harganya","Pengukuran berat tidak baku"]
+    },
+    "PJOK":{
+      1:["Gerak lokomotor","Permainan tradisional","Kebugaran jasmani dasar"],
+      2:["Gerak non-lokomotor","Permainan bola kecil","Kesehatan dan kebersihan diri"]
+    },
+    "Seni Musik":{
+      1:["Mengenal not dan irama","Lagu wajib nasional","Bermain alat musik perkusi"],
+      2:["Ansambel kelas","Lagu daerah Nusantara","Notasi sederhana"]
+    },
+    "Seni Rupa":{
+      1:["Karya kolase dari alam","Menggambar pola berulang","Mewarnai dengan teknik"],
+      2:["Seni rupa nusantara","Kerajinan dari alam","Membuat kartu ucapan"]
+    },
+    "Seni Tari":{
+      1:["Tari tradisional sederhana","Pola lantai tari","Kostum tari daerah"],
+      2:["Tari kreasi anak","Pertunjukan tari kelas","Musik pengiring tari"]
+    },
+    "Muatan Lokal":{
+      1:["Bahasa daerah (membaca)","Tradisi daerah","Tokoh daerah"],
+      2:["Menulis aksara daerah","Festival daerah","Produk lokal daerah"]
+    }
+  },
+  3:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Sifat-sifat Allah (wajib)","Iman kepada Allah","Membaca Al-Quran surah pendek","Sholat berjamaah"],
+      2:["Kisah Nabi Musa AS","Puasa Ramadan","Zakat dan manfaatnya","Akhlak terpuji dalam kehidupan"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Norma di masyarakat","Nilai-nilai Pancasila","Hak dan kewajiban di sekolah"],
+      2:["Keberagaman budaya Indonesia","Musyawarah mufakat","Persatuan dan kesatuan"]
+    },
+    "Bahasa Indonesia":{
+      1:["Teks deskripsi","Kalimat efektif","Kosakata baku","Membaca pemahaman"],
+      2:["Teks narasi","Puisi","Surat sederhana","Ejaan dan tanda baca lanjutan"]
+    },
+    "Matematika":{
+      1:["Bilangan cacah sampai 1000","Penjumlahan tiga angka","Pengurangan tiga angka","Perkalian 1–10","Pembagian"],
+      2:["Pecahan sederhana","Pengukuran panjang (m, cm)","Keliling bangun datar","Waktu (jam dan menit)","Data dan grafik sederhana"]
+    },
+    "IPAS":{
+      1:["Ciri-ciri makhluk hidup","Bagian tubuh tumbuhan","Hewan dan habitatnya","Cuaca dan musim","Sumber daya alam"],
+      2:["Daur hidup hewan","Fotosintesis","Perubahan wujud benda","Pelestarian lingkungan","Gaya dan gerak sederhana"]
+    },
+    "PJOK":{
+      1:["Atletik dasar (lari, lompat)","Permainan bola besar","Kebugaran jasmani"],
+      2:["Senam irama","Renang dasar","Gizi dan pola hidup sehat"]
+    },
+    "Seni Musik":{
+      1:["Melodi sederhana","Lagu wajib nasional","Alat musik daerah"],
+      2:["Ansambel sederhana","Dinamika dalam musik","Lagu daerah Nusantara"]
+    },
+    "Seni Rupa":{
+      1:["Menggambar ilustrasi","Seni batik (motif)","Karya tiga dimensi"],
+      2:["Seni anyaman","Kerajinan tangan dari daur ulang","Pameran karya kelas"]
+    },
+    "Seni Tari":{
+      1:["Tari tradisional daerah","Pola lantai","Properti tari"],
+      2:["Tari kreasi","Pertunjukan seni kelas","Unsur-unsur tari"]
+    },
+    "Bahasa Inggris":{
+      1:["Present tense","Daily activities","My school routine","Numbers 1–100"],
+      2:["Describing things","Animals and habitats","Simple conversation","Reading short text"]
+    },
+    "Muatan Lokal":{
+      1:["Bahasa daerah (membaca & menulis)","Cerita rakyat daerah","Permainan tradisional"],
+      2:["Aksara daerah","Kesenian daerah","Produk unggulan daerah"]
+    }
+  },
+  4:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Iman kepada malaikat Allah","Kitab-kitab Allah","Membaca Al-Quran dengan tartil","Perilaku terpuji (rendah hati)"],
+      2:["Kisah Nabi Isa AS","Ibadah haji dan umrah","Akhlak islami dalam pergaulan","Hormat kepada guru"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Sistem pemerintahan desa/kelurahan","Demokrasi dalam kehidupan","Hak asasi manusia dasar"],
+      2:["Keberagaman agama di Indonesia","Persatuan dan kesatuan","Semangat bela negara"]
+    },
+    "Bahasa Indonesia":{
+      1:["Teks eksposisi","Kalimat majemuk","Membaca cepat","Laporan pengamatan"],
+      2:["Teks laporan","Pantun","Menulis cerita kreatif","Wawancara sederhana"]
+    },
+    "Matematika":{
+      1:["Bilangan bulat","FPB dan KPK","Pecahan biasa dan campuran","Desimal","Operasi hitung campuran"],
+      2:["Luas bangun datar","Volume bangun ruang sederhana","Statistika dasar","Skala","Koordinat sederhana"]
+    },
+    "IPAS":{
+      1:["Sistem pencernaan manusia","Sistem pernapasan","Ekosistem dan komponen","Rantai makanan"],
+      2:["Energi dan perubahannya","Gaya dan gerak","Perubahan wujud benda","Sumber daya alam dan pelestarian"]
+    },
+    "PJOK":{
+      1:["Permainan tradisional","Kebugaran jasmani","Renang dasar"],
+      2:["Pencak silat dasar","P3K dan keselamatan","Bahaya narkoba"]
+    },
+    "Seni Musik":{
+      1:["Tangga nada mayor dan minor","Ansambel kelas","Lagu daerah"],
+      2:["Aransemen sederhana","Pertunjukan musik kelas","Musik tradisional Nusantara"]
+    },
+    "Seni Rupa":{
+      1:["Batik dan motif daerah","Seni kriya","Desain grafis sederhana"],
+      2:["Seni patung sederhana","Karya seni kolaboratif","Pameran seni kelas"]
+    },
+    "Seni Tari":{
+      1:["Tari nusantara","Garapan tari sederhana","Musik pengiring tari"],
+      2:["Tari kreasi modern","Pertunjukan tari","Apresiasi seni tari"]
+    },
+    "Bahasa Inggris":{
+      1:["Past tense","Description text","Nature vocabulary","Telling time"],
+      2:["Future tense","Procedure text","Short dialogue","Writing sentences"]
+    },
+    "Muatan Lokal":{
+      1:["Bahasa daerah lanjutan","Sastra daerah","Nilai budaya lokal"],
+      2:["Seni budaya daerah","Tokoh-tokoh daerah","Produk lokal dan ekonomi daerah"]
+    }
+  },
+  5:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Iman kepada kitab-kitab Allah","Iman kepada rasul-rasul Allah","Membaca Al-Quran surat pilihan","Sholat sunnah"],
+      2:["Kisah Nabi Muhammad SAW","Akhlak islami dalam kehidupan","Fiqih ibadah sehari-hari","Sedekah dan infaq"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Sistem pemerintahan kabupaten/kota","Nilai-nilai Pancasila dalam kehidupan","Hak dan kewajiban warga negara"],
+      2:["Hak asasi manusia","Persatuan dan kesatuan bangsa","Wawasan nusantara"]
+    },
+    "Bahasa Indonesia":{
+      1:["Teks persuasi","Teks argumentasi","Rangkuman","Majas dan gaya bahasa"],
+      2:["Surat resmi","Pidato","Resensi buku","Cerpen"]
+    },
+    "Matematika":{
+      1:["Operasi hitung campuran","Bilangan bulat negatif","Pangkat dan akar sederhana","Perbandingan senilai"],
+      2:["Luas dan keliling bangun datar","Volume bangun ruang","Diagram","Statistika dan peluang sederhana"]
+    },
+    "IPA":{
+      1:["Sistem peredaran darah","Sistem saraf manusia","Adaptasi hewan dan tumbuhan","Rantai makanan dan jaring-jaring makanan"],
+      2:["Zat dan campuran","Perubahan fisika dan kimia","Energi alternatif","Ekosistem dan dampak lingkungan"]
+    },
+    "IPS":{
+      1:["Kerajaan Hindu-Buddha di Indonesia","Kerajaan Islam di Indonesia","Peta dan atlas Indonesia"],
+      2:["Penjajahan di Indonesia","Kebangkitan nasional","Organisasi pergerakan nasional"]
+    },
+    "PJOK":{
+      1:["Bola voli","Bulu tangkis","Atletik (lari jarak menengah)","Kebugaran jasmani"],
+      2:["Renang gaya bebas","Senam lantai","Bahaya narkoba dan rokok","P3K lanjutan"]
+    },
+    "Seni Musik":{
+      1:["Musik daerah Nusantara","Harmoni dalam musik","Memainkan alat musik melodis"],
+      2:["Ansambel lanjutan","Aransemen lagu daerah","Pertunjukan musik sekolah"]
+    },
+    "Seni Rupa":{
+      1:["Seni rupa 3 dimensi","Desain poster","Batik lanjutan"],
+      2:["Fotografi dasar","Pameran seni","Karya seni kolaboratif"]
+    },
+    "Seni Tari":{
+      1:["Tari kreasi daerah","Koreografi sederhana","Ekspresi dalam tari"],
+      2:["Tari modern","Pertunjukan tari sekolah","Apresiasi tari"]
+    },
+    "Bahasa Inggris":{
+      1:["Present perfect","Narrative text","Environment vocabulary","Opinion expression"],
+      2:["Reading comprehension","Writing paragraph","Simple debate","World cultures"]
+    },
+    "Koding & KA":{
+      1:["Pengenalan algoritma","Pemrograman visual (Scratch)","Logika percabangan","Pengulangan (loop)"],
+      2:["Proyek sederhana Scratch","Pengenalan AI","Data dan informasi","Keamanan digital"]
+    },
+    "Muatan Lokal":{
+      1:["Sastra daerah lanjutan","Nilai-nilai budaya daerah","Sejarah daerah"],
+      2:["Kesenian daerah lanjutan","Wirausaha produk lokal","Tokoh inspiratif daerah"]
+    }
+  },
+  6:{
+    "Pendidikan Agama & Budi Pekerti":{
+      1:["Iman kepada hari kiamat","Iman kepada qada dan qadar","Membaca Al-Quran (surah pilihan)","Tata cara sholat jenazah"],
+      2:["Kisah sahabat Nabi","Zakat fitrah dan zakat mal","Sedekah dan wakaf","Islam rahmatan lil alamin"]
+    },
+    "Pendidikan Pancasila":{
+      1:["Sistem pemerintahan pusat","Lembaga-lembaga negara","Proses Pemilu"],
+      2:["Bela negara","Wawasan nusantara","Peran Indonesia di dunia (ASEAN, PBB)"]
+    },
+    "Bahasa Indonesia":{
+      1:["Teks diskusi","Teks ulasan","Karya ilmiah sederhana","Ejaan yang disempurnakan"],
+      2:["Cerpen dan novel anak","Debat sederhana","Menulis laporan","Pidato perpisahan"]
+    },
+    "Matematika":{
+      1:["Bilangan bulat dan pecahan lanjutan","Perbandingan senilai dan berbalik nilai","Persen dan bunga sederhana","Kecepatan dan debit"],
+      2:["Luas dan volume bangun ruang","Koordinat kartesius","Pengolahan data","Statistika dan peluang"]
+    },
+    "IPA":{
+      1:["Perkembangbiakan makhluk hidup","Listrik statis dan dinamis","Kemagnetan"],
+      2:["Tata surya","Bioteknologi sederhana","Dampak perubahan lingkungan"]
+    },
+    "IPS":{
+      1:["Proklamasi kemerdekaan Indonesia","Masa Orde Lama","Masa Orde Baru"],
+      2:["Masa Reformasi","ASEAN dan kerja sama regional","Globalisasi dan dampaknya"]
+    },
+    "PJOK":{
+      1:["Sepak bola","Bola basket","Atletik (lompat jauh)","Kebugaran jasmani"],
+      2:["Renang gaya dada","Kesehatan reproduksi remaja","Pertolongan pertama","Gaya hidup sehat"]
+    },
+    "Seni Musik":{
+      1:["Pertunjukan musik sekolah","Musik ansambel lanjutan","Aransemen lagu"],
+      2:["Apresiasi musik","Rekaman musik sederhana","Karya musik kolaboratif"]
+    },
+    "Seni Rupa":{
+      1:["Pameran seni rupa","Karya seni instalasi sederhana","Desain batik modern"],
+      2:["Seni digital dasar","Apresiasi karya seni","Portofolio seni"]
+    },
+    "Seni Tari":{
+      1:["Tari kreasi modern","Pertunjukan tari sekolah","Koreografi lanjutan"],
+      2:["Film pendek tari","Apresiasi seni tari","Karya tari perpisahan"]
+    },
+    "Bahasa Inggris":{
+      1:["Passive voice","Procedure text lanjutan","World cultures","Debate simple"],
+      2:["Writing an essay","Reading comprehension lanjutan","Presentation in English","English for communication"]
+    },
+    "Koding & KA":{
+      1:["Pemrograman teks sederhana (Python dasar)","Algoritma lanjutan","Proyek AI sederhana"],
+      2:["Aplikasi berbasis data","Etika digital","Proyek akhir teknologi"]
+    },
+    "Muatan Lokal":{
+      1:["Sastra daerah (karya tulis)","Sejarah lokal lanjutan","Budaya dan identitas daerah"],
+      2:["Karya seni daerah perpisahan","Wirausaha kreatif daerah","Presentasi budaya lokal"]
+    }
+  }
+};
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let soalData    = null;
+let kunciVisible= false;
+let logos       = {logo1:null,logo2:null};
+let halamanSoal = [];
+let currentPage = 0;
+const SOAL_PER_HALAMAN = 5;
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+(function init(){
+  const saved=localStorage.getItem('theme');
+  if(saved==='dark'){document.body.classList.add('dark');document.getElementById('darkToggle').textContent='☀️ Light';}
+  document.getElementById('tanggal').valueAsDate=new Date();
+  renderMapelOptions();
+  renderMateriChecklist();
+})();
+
+/* ════════════════════════════════════════════
+   DARK MODE
+════════════════════════════════════════════ */
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  const d=document.body.classList.contains('dark');
+  document.getElementById('darkToggle').textContent=d?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('theme',d?'dark':'light');
+}
+
+/* ════════════════════════════════════════════
+   LOGO
+════════════════════════════════════════════ */
+function handleLogo(event,key,thumbId,hintId,btnId){
+  const file=event.target.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){alert('Maks 2MB.');return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    logos[key]=e.target.result;
+    const th=document.getElementById(thumbId);
+    th.src=e.target.result;th.style.display='block';
+    document.getElementById(hintId).style.display='none';
+    document.getElementById(btnId).style.display='inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+function hapusLogo(inputId,key,thumbId,hintId,btnId){
+  logos[key]=null;
+  document.getElementById(inputId).value='';
+  const th=document.getElementById(thumbId);
+  th.src='';th.style.display='none';
+  document.getElementById(hintId).style.display='flex';
+  document.getElementById(btnId).style.display='none';
+}
+
+/* ════════════════════════════════════════════
+   FORM DINAMIS
+════════════════════════════════════════════ */
+function onKelasChange(){updateOpsiNote();renderMapelOptions();renderMateriChecklist();}
+function onMapelChange(){renderMateriChecklist();}
+function onSemesterChange(){renderMateriChecklist();}
+
+function renderMapelOptions(){
+  const kelas=parseInt(document.getElementById('kelas').value);
+  const mapels=DB_MAPEL[kelas]||[];
+  document.getElementById('mataPelajaran').innerHTML=mapels.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function renderMateriChecklist(){
+  const kelas=parseInt(document.getElementById('kelas').value);
+  const mapel=document.getElementById('mataPelajaran').value;
+  const sem=parseInt(document.getElementById('semester').value);
+  const box=document.getElementById('materiBox');
+  const list=(DB_MATERI[kelas]&&DB_MATERI[kelas][mapel]&&DB_MATERI[kelas][mapel][sem])?DB_MATERI[kelas][mapel][sem]:[];
+  if(!list.length){box.innerHTML='<div class="materi-empty">Belum ada data materi.</div>';return;}
+  box.innerHTML=list.map((m,i)=>`<label class="cb-label"><input type="checkbox" class="cb-materi" value="${escHtml(m)}" ${i<3?'checked':''}/>${escHtml(m)}</label>`).join('');
+}
+
+function pilihSemua(){
+  const cbs=document.querySelectorAll('.cb-materi');
+  const all=[...cbs].every(c=>c.checked);
+  cbs.forEach(c=>c.checked=!all);
+}
+
+function getMateriTerpilih(){return[...document.querySelectorAll('.cb-materi:checked')].map(c=>c.value).join(', ');}
+function getKesulitanTerpilih(){return[...document.querySelectorAll('.cb-kesulitan:checked')].map(c=>c.value).join(', ');}
+
+function updateOpsiNote(){
+  const k=parseInt(document.getElementById('kelas').value);
+  document.getElementById('opsiNote').textContent=k<=2?'(A–C)':'(A–D)';
+}
+
+/* ════════════════════════════════════════════
+   JUDUL UJIAN — fix dobel semester
+════════════════════════════════════════════ */
+function getJudulUjian(){
+  const jenis=document.getElementById('jenisUjian').value;
+  const sem=document.getElementById('semester').value;
+  const semStr=sem==='1'?'Ganjil':'Genap';
+  if(jenis==='Ulangan Harian'||jenis==='Latihan'){return jenis;}
+  if(jenis==='Sumatif Akhir Jenjang'){return jenis;}
+  return jenis+' '+semStr;
+}
+
+/* ════════════════════════════════════════════
+   GENERATE
+════════════════════════════════════════════ */
+function handleGenerate(){
+  const materi=getMateriTerpilih();
+  if(!materi){showError('Pilih minimal satu materi.');return;}
+  const kesulitan=getKesulitanTerpilih();
+  if(!kesulitan){showError('Pilih minimal satu tingkat kesulitan.');return;}
+  const topik=document.getElementById('topikTambahan').value.trim();
+  const materiLengkap=topik?`${materi}. Catatan: ${topik}`:materi;
+  hideError();setLoading(true);
+
+  const params={
+    mataPelajaran:document.getElementById('mataPelajaran').value,
+    kelas:parseInt(document.getElementById('kelas').value),
+    materi:materiLengkap,
+    kesulitan:kesulitan,
+    jmlPG:parseInt(document.getElementById('jmlPG').value)||0,
+    jmlIsian:parseInt(document.getElementById('jmlIsian').value)||0,
+    jmlUraian:parseInt(document.getElementById('jmlUraian').value)||0
+  };
+
+  google.script.run
+    .withSuccessHandler(function(result){
+      setLoading(false);
+      if(result.success){
+        soalData=result.data;
+        buildHalaman(soalData);
+        currentPage=0;showPage(0);
+        kunciVisible=false;
+        document.getElementById('kunciBox').style.display='none';
+        document.getElementById('btnKunci').textContent='🔑 Kunci';
+      }else{showError('Gagal: '+result.error);}
+    })
+    .withFailureHandler(function(err){setLoading(false);showError('Error: '+err.message);})
+    .generateSoal(params);
+}
+
+function setLoading(s){
+  document.getElementById('btnGenerate').disabled=s;
+  document.getElementById('spinner').style.display=s?'block':'none';
+  document.getElementById('btnLabel').textContent=s?'Membuat soal...':'✨ Generate Soal';
+}
+function showError(m){const e=document.getElementById('errorBox');e.textContent='⚠️ '+m;e.style.display='block';}
+function hideError(){document.getElementById('errorBox').style.display='none';}
+
+/* ════════════════════════════════════════════
+   BUILD HALAMAN
+════════════════════════════════════════════ */
+function buildHalaman(data){
+  const pg=data.pilihanGanda||[];
+  const isian=data.isian||[];
+  const uraian=data.uraian||[];
+  const headerHtml=buildDocHeader();
+  halamanSoal=[];
+
+  const allBlocks=[];
+  if(pg.length>0){
+    allBlocks.push({type:'section',label:'I. Pilihan Ganda',petunjuk:'Berilah tanda silang (X) pada huruf jawaban yang paling benar!'});
+    pg.forEach((item,i)=>allBlocks.push({type:'pg',item,no:i+1}));
+  }
+  if(isian.length>0){
+    allBlocks.push({type:'section',label:'II. Isian Singkat',petunjuk:'Isilah titik-titik berikut dengan jawaban yang tepat!'});
+    isian.forEach((item,i)=>allBlocks.push({type:'isian',item,no:pg.length+i+1}));
+  }
+  if(uraian.length>0){
+    allBlocks.push({type:'section',label:'III. Uraian',petunjuk:'Jawablah pertanyaan berikut dengan lengkap dan benar!'});
+    uraian.forEach((item,i)=>allBlocks.push({type:'uraian',item,no:pg.length+isian.length+i+1}));
+  }
+
+  let soalCount=0;
+  let pageBlocks=[];
+  let isFirstPage=true;
+  let currentSection=null;
+
+  for(let i=0;i<allBlocks.length;i++){
+    const b=allBlocks[i];
+    if(b.type==='section'){
+      currentSection=b;
+    } else {
+      if(soalCount>0&&soalCount%SOAL_PER_HALAMAN===0){
+        halamanSoal.push(renderPage(isFirstPage?headerHtml:'',pageBlocks,currentSection));
+        pageBlocks=[];
+        isFirstPage=false;
+      }
+      pageBlocks.push(b);
+      soalCount++;
+    }
+  }
+  if(pageBlocks.length>0){
+    halamanSoal.push(renderPage(isFirstPage?headerHtml:'',pageBlocks,currentSection));
+  }
+  if(halamanSoal.length===0){halamanSoal.push(headerHtml+'<p style="padding:20px;color:#999;">Tidak ada soal.</p>');}
+  renderKunci(data,pg,isian,uraian);
+}
+
+function renderPage(headerHtml,blocks,lastSection){
+  // Kelompokkan blok berdasarkan section
+  let html=headerHtml;
+  let prevType='';
+  blocks.forEach((b,idx)=>{
+    // Tambah section title jika ganti tipe
+    const curType=b.type;
+    if(curType!==prevType){
+      if(prevType!==''){html+='</table>';}
+      // Cari section yang sesuai
+      let sectionLabel='';let petunjuk='';
+      if(curType==='pg'){sectionLabel='I. Pilihan Ganda';petunjuk='Berilah tanda silang (X) pada huruf jawaban yang paling benar!';}
+      else if(curType==='isian'){sectionLabel='II. Isian Singkat';petunjuk='Isilah titik-titik berikut dengan jawaban yang tepat!';}
+      else if(curType==='uraian'){sectionLabel='III. Uraian';petunjuk='Jawablah pertanyaan berikut dengan lengkap dan benar!';}
+      // Hanya tampilkan section title jika ini awal section (soal nomor pertama dari tipe itu)
+      const isFirstOfType=idx===0||blocks[idx-1].type!==curType;
+      if(isFirstOfType){
+        html+=`<div class="doc-section-title">${sectionLabel}</div>`;
+        html+=`<div class="doc-petunjuk">${petunjuk}</div>`;
+      }
+      html+=`<table class="doc-soal-table">`;
+      prevType=curType;
+    }
+    html+=buildSoalRow(b);
+  });
+  if(prevType!==''){html+='</table>';}
+  return html;
+}
+
+function buildDocHeader(){
+  const namaSekolah=escHtml(document.getElementById('namaSekolah').value||'SDN ---');
+  const tahun=escHtml(document.getElementById('tahunPelajaran').value||'2025/2026');
+  const mapel=escHtml(document.getElementById('mataPelajaran').value);
+  const kelas=escHtml(document.getElementById('kelas').value);
+  const semester=document.getElementById('semester').value;
+  const semStr=semester==='1'?'Ganjil':'Genap';
+  const tanggal=document.getElementById('tanggal').value
+    ?new Date(document.getElementById('tanggal').value).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})
+    :'...................................';
+  const judulUjian=escHtml(getJudulUjian());
+
+  const logoKiri=logos.logo1
+    ?`<img src="${logos.logo1}" style="width:62px;height:62px;object-fit:contain;"/>`
+    :`<div style="width:62px;height:62px;"></div>`;
+  const logoKanan=logos.logo2
+    ?`<img src="${logos.logo2}" style="width:62px;height:62px;object-fit:contain;"/>`
+    :`<div style="width:62px;height:62px;"></div>`;
+
+  return `
+  <table class="doc-header-table">
+    <tr>
+      <td class="doc-logo-cell" style="width:75px;">${logoKiri}</td>
+      <td class="doc-title-cell">
+        <div class="doc-ujian-title">${judulUjian}</div>
+        <div class="doc-school-name">${namaSekolah}</div>
+        <div class="doc-tahun">Tahun Pelajaran ${tahun}</div>
+      </td>
+      <td style="width:75px;text-align:center;">${logoKanan}</td>
+    </tr>
+  </table>
+  <div class="doc-header-line"></div>
+  <table class="doc-identitas-table">
+    <tr>
+      <td class="id-label">Mata Pelajaran</td><td class="id-sep">:</td>
+      <td class="id-value">${mapel}</td>
+      <td style="width:16px;"></td>
+      <td class="id-label">Nama</td><td class="id-sep">:</td>
+      <td class="id-value">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+    <tr>
+      <td class="id-label">Kelas / Semester</td><td class="id-sep">:</td>
+      <td class="id-value">${kelas} / ${semStr}</td>
+      <td></td>
+      <td class="id-label">No. Absen</td><td class="id-sep">:</td>
+      <td class="id-value">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+    <tr>
+      <td class="id-label">Tanggal</td><td class="id-sep">:</td>
+      <td class="id-value">${escHtml(tanggal)}</td>
+      <td></td>
+      <td class="id-label">Nilai</td><td class="id-sep">:</td>
+      <td class="id-value">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+  </table>
+  <div class="doc-identitas-line"></div>`;
+}
+
+function buildSoalRow(b){
+  if(b.type==='pg'){
+    const opsiArr=b.item.opsi||[];
+    let opsiHtml='<table class="opsi-table">';
+    for(let x=0;x<opsiArr.length;x+=2){
+      const h1=opsiArr[x].substring(0,2);const t1=opsiArr[x].substring(2).trim();
+      const h2=opsiArr[x+1]?opsiArr[x+1].substring(0,2):'';
+      const t2=opsiArr[x+1]?opsiArr[x+1].substring(2).trim():'';
+      opsiHtml+=`<tr><td class="opsi-label">${escHtml(h1)}</td><td class="opsi-teks">${escHtml(t1)}</td><td class="opsi-label">${escHtml(h2)}</td><td>${escHtml(t2)}</td></tr>`;
+    }
+    opsiHtml+='</table>';
+    return `<tr><td class="soal-no">${b.no}.</td><td>${escHtml(b.item.soal)}${opsiHtml}</td></tr><tr><td colspan="2" style="height:4px;"></td></tr>`;
+  }
+  if(b.type==='isian'){
+    return `<tr><td class="soal-no">${b.no}.</td><td>${escHtml(b.item.soal)}<br><span class="isian-garis">&nbsp;</span></td></tr><tr><td colspan="2" style="height:3px;"></td></tr>`;
+  }
+  if(b.type==='uraian'){
+    return `<tr><td class="soal-no">${b.no}.</td><td>${escHtml(b.item.soal)}<div class="uraian-kotak"></div></td></tr><tr><td colspan="2" style="height:5px;"></td></tr>`;
+  }
+  return '';
+}
+
+/* ════════════════════════════════════════════
+   NAVIGASI HALAMAN
+════════════════════════════════════════════ */
+function showPage(idx){
+  if(!halamanSoal.length)return;
+  currentPage=Math.max(0,Math.min(idx,halamanSoal.length-1));
+  document.getElementById('previewBox').innerHTML=halamanSoal[currentPage];
+  document.getElementById('pageInfo').textContent=`Hal ${currentPage+1} / ${halamanSoal.length}`;
+  document.getElementById('btnPrev').disabled=currentPage===0;
+  document.getElementById('btnNext').disabled=currentPage===halamanSoal.length-1;
+}
+function prevPage(){showPage(currentPage-1);}
+function nextPage(){showPage(currentPage+1);}
+
+/* ════════════════════════════════════════════
+   KUNCI JAWABAN
+════════════════════════════════════════════ */
+function renderKunci(data,pg,isian,uraian){
+  let html='';
+  if(pg.length>0){
+    html+=`<div style="margin-bottom:8px;"><strong style="font-size:.78rem;color:var(--text-light);">PILIHAN GANDA</strong></div><div class="kunci-grid">`;
+    pg.forEach((item,i)=>{html+=`<div class="kunci-item">${i+1}. <strong>${escHtml(item.jawaban)}</strong></div>`;});
+    html+=`</div>`;
+  }
+  if(isian.length>0){
+    html+=`<div class="kunci-isian"><h4>Isian Singkat</h4><ol>`;
+    isian.forEach(item=>{html+=`<li>${escHtml(item.jawaban)}</li>`;});
+    html+=`</ol></div>`;
+  }
+  if(uraian.length>0){
+    html+=`<div class="kunci-uraian"><h4>Uraian</h4><ol>`;
+    uraian.forEach(item=>{html+=`<li>${escHtml(item.jawaban)}</li>`;});
+    html+=`</ol></div>`;
+  }
+  document.getElementById('kunciContent').innerHTML=html;
+}
+
+function toggleKunci(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  kunciVisible=!kunciVisible;
+  const box=document.getElementById('kunciBox');
+  box.style.display=kunciVisible?'block':'none';
+  document.getElementById('btnKunci').textContent=kunciVisible?'🔒 Tutup':'🔑 Kunci';
+  if(kunciVisible)box.scrollIntoView({behavior:'smooth'});
+}
+
+function downloadKunci(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  const pg=soalData.pilihanGanda||[];
+  const isian=soalData.isian||[];
+  const uraian=soalData.uraian||[];
+  const mapel=document.getElementById('mataPelajaran').value;
+  const kelas=document.getElementById('kelas').value;
+  let txt=`KUNCI JAWABAN\nMata Pelajaran: ${mapel} | Kelas: ${kelas}\n${'='.repeat(40)}\n\n`;
+  if(pg.length>0){txt+=`I. PILIHAN GANDA\n`;pg.forEach((item,i)=>{txt+=`${i+1}. ${item.jawaban}\n`;});txt+=`\n`;}
+  if(isian.length>0){txt+=`II. ISIAN SINGKAT\n`;isian.forEach((item,i)=>{txt+=`${pg.length+i+1}. ${item.jawaban}\n`;});txt+=`\n`;}
+  if(uraian.length>0){txt+=`III. URAIAN\n`;uraian.forEach((item,i)=>{txt+=`${pg.length+isian.length+i+1}. ${item.jawaban}\n`;});}
+  const blob=new Blob([txt],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Kunci_${mapel}_Kelas${kelas}.txt`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ════════════════════════════════════════════
+   EXPORT PDF
+════════════════════════════════════════════ */
+function exportPDF(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  const box=document.getElementById('previewBox');
+  const{jsPDF}=window.jspdf;
+  const pdf=new jsPDF('p','mm','a4');
+  const w=pdf.internal.pageSize.getWidth();
+  const pageH=pdf.internal.pageSize.getHeight();
+  let chain=Promise.resolve();
+  halamanSoal.forEach((html,idx)=>{
+    chain=chain.then(()=>{
+      box.innerHTML=html;
+      return html2canvas(box,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+    }).then(canvas=>{
+      const imgData=canvas.toDataURL('image/png');
+      const h=(canvas.height*w)/canvas.width;
+      if(idx>0)pdf.addPage();
+      let posY=0;
+      while(posY<h){if(posY>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-posY,w,h);posY+=pageH;}
+    });
+  });
+  chain.then(()=>{
+    showPage(currentPage);
+    pdf.save(`Soal_${document.getElementById('mataPelajaran').value}_Kelas${document.getElementById('kelas').value}.pdf`);
+  });
+}
+
+/* ════════════════════════════════════════════
+   EXPORT WORD — dibangun dari data mentah, bukan innerHTML
+════════════════════════════════════════════ */
+function exportWord(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  const pg=soalData.pilihanGanda||[];
+  const isian=soalData.isian||[];
+  const uraian=soalData.uraian||[];
+  const namaSekolah=document.getElementById('namaSekolah').value||'SDN ---';
+  const tahun=document.getElementById('tahunPelajaran').value||'2025/2026';
+  const mapel=document.getElementById('mataPelajaran').value;
+  const kelas=document.getElementById('kelas').value;
+  const semester=document.getElementById('semester').value;
+  const semStr=semester==='1'?'Ganjil':'Genap';
+  const judulUjian=getJudulUjian();
+  const tanggal=document.getElementById('tanggal').value
+    ?new Date(document.getElementById('tanggal').value).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})
+    :'.....................';
+
+  let body=`
+  <div align="center" style="font-family:Times New Roman,serif;">
+    <p style="font-size:11pt;font-weight:bold;text-transform:uppercase;margin:0;">${judulUjian}</p>
+    <p style="font-size:14pt;font-weight:bold;text-transform:uppercase;margin:2pt 0;">${namaSekolah}</p>
+    <p style="font-size:10pt;margin:0;">Tahun Pelajaran ${tahun}</p>
+  </div>
+  <div style="border-top:3px solid black;margin:6pt 0 10pt;"></div>
+  <table width="100%" style="font-family:Times New Roman,serif;font-size:11pt;border-collapse:collapse;">
+    <tr>
+      <td width="115">Mata Pelajaran</td><td width="12">:</td>
+      <td style="border-bottom:1px solid #333;">${mapel}</td>
+      <td width="18"></td>
+      <td width="100">Nama</td><td width="12">:</td>
+      <td style="border-bottom:1px solid #333;min-width:130pt;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td>Kelas / Semester</td><td>:</td>
+      <td style="border-bottom:1px solid #333;">${kelas} / ${semStr}</td>
+      <td></td>
+      <td>No. Absen</td><td>:</td>
+      <td style="border-bottom:1px solid #333;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td>Tanggal</td><td>:</td>
+      <td style="border-bottom:1px solid #333;">${tanggal}</td>
+      <td></td>
+      <td>Nilai</td><td>:</td>
+      <td style="border-bottom:1px solid #333;">&nbsp;</td>
+    </tr>
+  </table>
+  <div style="border-top:1px solid black;margin:8pt 0 10pt;"></div>`;
+
+  if(pg.length>0){
+    body+=`<p style="font-family:Times New Roman,serif;font-size:11pt;font-weight:bold;text-decoration:underline;margin:12pt 0 4pt;">I. Pilihan Ganda</p>`;
+    body+=`<p style="font-family:Times New Roman,serif;font-size:10pt;font-style:italic;margin:0 0 6pt;">Berilah tanda silang (X) pada huruf jawaban yang paling benar!</p>`;
+    pg.forEach((item,i)=>{
+      body+=`<table width="100%" style="font-family:Times New Roman,serif;font-size:11pt;margin-bottom:5pt;border-collapse:collapse;">
+        <tr><td width="22" valign="top">${i+1}.</td><td valign="top">${item.soal}
+        <table width="100%" style="border-collapse:collapse;margin-top:2pt;">`;
+      const opsiArr=item.opsi||[];
+      for(let x=0;x<opsiArr.length;x+=2){
+        const h1=opsiArr[x].substring(0,2);const t1=opsiArr[x].substring(2).trim();
+        const h2=opsiArr[x+1]?opsiArr[x+1].substring(0,2):'';
+        const t2=opsiArr[x+1]?opsiArr[x+1].substring(2).trim():'';
+        body+=`<tr><td width="22">${h1}</td><td width="44%">${t1}</td><td width="22">${h2}</td><td>${t2}</td></tr>`;
+      }
+      body+=`</table></td></tr></table>`;
+    });
+  }
+
+  if(isian.length>0){
+    body+=`<p style="font-family:Times New Roman,serif;font-size:11pt;font-weight:bold;text-decoration:underline;margin:12pt 0 4pt;">II. Isian Singkat</p>`;
+    body+=`<p style="font-family:Times New Roman,serif;font-size:10pt;font-style:italic;margin:0 0 6pt;">Isilah titik-titik berikut dengan jawaban yang tepat!</p>`;
+    isian.forEach((item,i)=>{
+      body+=`<table width="100%" style="font-family:Times New Roman,serif;font-size:11pt;margin-bottom:4pt;border-collapse:collapse;">
+        <tr><td width="22" valign="top">${pg.length+i+1}.</td>
+        <td>${item.soal}<br/><span style="display:inline-block;border-bottom:1px solid black;width:55%;min-width:150pt;">&nbsp;</span>
+        </td></tr></table>`;
+    });
+  }
+
+  if(uraian.length>0){
+    body+=`<p style="font-family:Times New Roman,serif;font-size:11pt;font-weight:bold;text-decoration:underline;margin:12pt 0 4pt;">III. Uraian</p>`;
+    body+=`<p style="font-family:Times New Roman,serif;font-size:10pt;font-style:italic;margin:0 0 6pt;">Jawablah pertanyaan berikut dengan lengkap dan benar!</p>`;
+    uraian.forEach((item,i)=>{
+      body+=`<table width="100%" style="font-family:Times New Roman,serif;font-size:11pt;margin-bottom:6pt;border-collapse:collapse;">
+        <tr><td width="22" valign="top">${pg.length+isian.length+i+1}.</td>
+        <td>${item.soal}
+        <table width="100%" style="margin-top:3pt;"><tr><td style="border:1px solid #bbb;height:48pt;">&nbsp;</td></tr></table>
+        </td></tr></table>`;
+    });
+  }
+
+  const wordHtml=`<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:w="urn:schemas-microsoft-com:office:word"
+    xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<!--[if gte mso 9]><xml><w:WordDocument>
+<w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/>
+</w:WordDocument></xml><![endif]-->
+<style>
+  body{font-family:"Times New Roman",serif;font-size:12pt;margin:2cm;}
+  table{border-collapse:collapse;}
+  td{vertical-align:top;}
+  p{margin:3pt 0;}
+</style>
+</head>
+<body>${body}</body></html>`;
+
+  const blob=new Blob(['\ufeff',wordHtml],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`Soal_${mapel}_Kelas${kelas}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ════════════════════════════════════════════
+   COPY
+════════════════════════════════════════════ */
+function copyContent(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  const text=document.getElementById('previewBox').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('[onclick="copyContent()"]');
+    const orig=btn.textContent;btn.textContent='✅ Tersalin!';
+    setTimeout(()=>btn.textContent=orig,2000);
+  });
+}
+
+/* ════════════════════════════════════════════
+   HELPER
+════════════════════════════════════════════ */
+function escHtml(str){
+  if(!str)return'';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
