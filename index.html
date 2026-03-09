@@ -18,7 +18,7 @@
   --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
   --gray-700:#334155;--blue:#3b82f6;--radius:16px;
   --shadow:0 4px 24px rgba(0,0,0,.10);--shadow-lg:0 8px 40px rgba(0,0,0,.15);
-  --bg:var(--grad);--card-bg:#fff;--text:#334155;
+  --bg:#e8f0ef;--card-bg:#fff;--text:#334155;
   --text-light:#64748b;--border:#e2e8f0;--input-bg:#f8fafc;
 }
 body.dark{
@@ -92,12 +92,13 @@ body.dark header{background:linear-gradient(135deg,#1e3a5f,#1e293b);}
 .header-brand{display:flex;align-items:center;gap:10px;}
 .header-brand img{width:36px;height:36px;border-radius:10px;}
 .header-brand h1{
-  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;color:#fff;
+  font-size:1.15rem;font-weight:800;letter-spacing:-.5px;color:#ffd700;
+  text-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 .header-brand p{font-size:.68rem;color:rgba(255,255,255,.85);margin-top:1px;}
 .header-right{display:flex;align-items:center;gap:7px;}
-.version-badge{font-size:.64rem;background:rgba(255,255,255,.2);color:#fff;padding:2px 7px;border-radius:99px;border:1px solid rgba(255,255,255,.3);}
-.free-badge{font-size:.64rem;background:rgba(255,215,0,.25);color:#ffd700;padding:2px 7px;border-radius:99px;border:1px solid rgba(255,215,0,.4);font-weight:700;}
+.version-badge{font-size:.64rem;background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);font-weight:600;}
+.free-badge{display:none;}
 .btn-apikey{
   font-size:.75rem;padding:5px 11px;border-radius:99px;
   background:rgba(255,255,255,.2);color:#fff;
@@ -187,8 +188,9 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
 
 #previewBox{
   background:#fff;color:#000;padding:13mm 15mm 13mm 17mm;
-  max-width:794px;margin:0 auto;border-radius:4px;box-shadow:var(--shadow-lg);
-  min-height:440px;font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.55;
+  width:794px;min-height:1123px;margin:0 auto;border-radius:4px;box-shadow:var(--shadow-lg);
+  font-family:'Times New Roman',Times,serif;font-size:11pt;line-height:1.55;
+  box-sizing:border-box;
 }
 
 /* Dokumen styles */
@@ -232,9 +234,9 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
 .empty-state p{font-size:.88rem;}
 
 /* Footer */
-footer{background:linear-gradient(135deg,#1e3a5f,#0f5132);color:#fff;text-align:center;padding:14px 20px 10px;margin-top:auto;}
+footer{background:var(--grad);color:#fff;text-align:center;padding:14px 20px 10px;margin-top:auto;}
 footer .footer-title{font-size:.86rem;font-weight:700;margin-bottom:2px;}
-footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
+footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
 
 /* Responsive */
 @media(max-width:960px){
@@ -287,8 +289,7 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
     </div>
   </div>
   <div class="header-right">
-    <span class="version-badge">v26.3.9c</span>
-    <span class="free-badge">Free</span>
+    <span class="version-badge">v26.3.9c • Free Version</span>
     <button id="darkToggle" onclick="toggleDark()">🌙 Dark</button>
   </div>
 </header>
@@ -301,21 +302,39 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
 </nav>
 
 <!-- ══ TAB TENTANG ══ -->
-<div id="tab-tentang" style="display:none;max-width:760px;margin:20px auto;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;">
-  <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">ℹ️ Tentang Aplikasi</h3>
-  <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:10px;"><b>Bantu Guru Yuk v26.3.9c (Free Version)</b> adalah generator soal berbasis AI yang membantu guru membuat soal ujian secara cepat, rapi, dan siap cetak.</p>
-  <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:10px;">Dirancang khusus untuk mendukung <b>Kurikulum Merdeka</b> untuk jenjang SD.</p>
-  <h4 style="font-size:.85rem;font-weight:700;margin:12px 0 6px;">✨ Fitur Utama:</h4>
-  <ul style="font-size:.83rem;color:var(--text);line-height:2;padding-left:18px;">
-    <li>Generate soal otomatis via Gemini AI</li>
-    <li>Pilihan Ganda, Isian Singkat, dan Uraian</li>
-    <li>Sesuai Taksonomi Bloom (C1–C6)</li>
-    <li>Export PDF &amp; Word siap cetak</li>
-    <li>Kunci jawaban otomatis</li>
-    <li>Support Kurikulum Merdeka</li>
+<div id="tab-tentang" style="display:none;max-width:760px;margin:20px auto;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;">
+  <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:6px;color:var(--text);">ℹ️ Tentang Aplikasi</h3>
+  <p style="font-size:.8rem;color:var(--text-light);margin-bottom:16px;">Bantu Guru Yuk v26.3.9c • Free Version • 2026</p>
+
+  <p style="font-size:.88rem;color:var(--text);line-height:1.8;margin-bottom:14px;">
+    <b>Bantu Guru Yuk</b> adalah generator soal otomatis berbasis AI yang dirancang khusus untuk guru SD Kurikulum Merdeka. Buat soal berkualitas dalam hitungan detik — tanpa perlu keahlian teknis apapun.
+  </p>
+
+  <h4 style="font-size:.85rem;font-weight:700;margin:14px 0 8px;color:var(--text);">✨ Fitur Utama</h4>
+  <ul style="font-size:.84rem;color:var(--text);line-height:2.1;padding-left:18px;">
+    <li>Generate soal PG, Isian Singkat &amp; Uraian otomatis via AI</li>
+    <li>Sesuai Taksonomi Bloom C1–C6</li>
+    <li>Mendukung semua mata pelajaran SD kelas 1–6</li>
+    <li>Kunci jawaban otomatis lengkap</li>
+    <li>Export soal ke PDF &amp; Word siap cetak</li>
+    <li>Tampilan lembar soal profesional ala sekolah</li>
+    <li>Bisa diinstall sebagai aplikasi (PWA)</li>
   </ul>
-  <h4 style="font-size:.85rem;font-weight:700;margin:12px 0 4px;">👨‍💻 Pengembang:</h4>
-  <p style="font-size:.83rem;color:var(--text);">Pak Choyy — <span style="color:var(--blue);">pakchoyy.github.io</span></p>
+
+  <h4 style="font-size:.85rem;font-weight:700;margin:14px 0 8px;color:var(--text);">🎯 Tujuan</h4>
+  <p style="font-size:.84rem;color:var(--text);line-height:1.8;">
+    Membantu guru menghemat waktu persiapan soal agar bisa lebih fokus pada kualitas pembelajaran dan interaksi dengan siswa.
+  </p>
+
+  <h4 style="font-size:.85rem;font-weight:700;margin:14px 0 8px;color:var(--text);">👨‍💻 Pengembang</h4>
+  <p style="font-size:.84rem;color:var(--text);line-height:1.8;">
+    <b>Pak Choyy</b> — Guru SD yang peduli teknologi pendidikan 🚀<br/>
+    <span style="color:var(--blue);">pakchoyy.github.io</span>
+  </p>
+
+  <div style="margin-top:18px;padding:12px 16px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);font-size:.8rem;color:var(--text-light);line-height:1.8;">
+    📌 <b>Versi:</b> v26.3.9c &nbsp;|&nbsp; <b>Status:</b> Free Version &nbsp;|&nbsp; <b>Tahun:</b> 2026
+  </div>
 </div>
 
 <!-- ══ TAB KONTAK ══ -->
@@ -465,7 +484,6 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.7);}
         <button class="btn btn-secondary" onclick="copyContent()">📋 Copy</button>
         <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
         <button class="btn btn-secondary" id="btnKunci" onclick="toggleKunci()">🔑 Kunci</button>
-        <button class="btn btn-secondary" onclick="downloadKunci()">💾 Kunci PDF</button>
       </div>
     </div>
 
@@ -976,13 +994,34 @@ function exportPDF(){
   if(!soalData){alert('Generate soal terlebih dahulu.');return;}
   const box=document.getElementById('previewBox');
   const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');
-  const w=pdf.internal.pageSize.getWidth();const pageH=pdf.internal.pageSize.getHeight();
+  const w=pdf.internal.pageSize.getWidth();
+  const pageH=pdf.internal.pageSize.getHeight();
   let chain=Promise.resolve();
   halamanSoal.forEach((html,idx)=>{
-    chain=chain.then(()=>{box.innerHTML=html;return html2canvas(box,{scale:2,useCORS:true,backgroundColor:'#ffffff'});})
-    .then(canvas=>{const imgData=canvas.toDataURL('image/png');const h=(canvas.height*w)/canvas.width;if(idx>0)pdf.addPage();let posY=0;while(posY<h){if(posY>0)pdf.addPage();pdf.addImage(imgData,'PNG',0,-posY,w,h);posY+=pageH;}});
+    chain=chain.then(()=>{
+      box.innerHTML=html;
+      return html2canvas(box,{scale:2,useCORS:true,backgroundColor:'#ffffff',width:794,windowWidth:794});
+    }).then(canvas=>{
+      if(idx>0)pdf.addPage();
+      const imgData=canvas.toDataURL('image/png');
+      const imgH=(canvas.height*w)/canvas.width;
+      // Hanya tambah halaman baru jika konten melebihi 1 halaman A4
+      if(imgH<=pageH){
+        pdf.addImage(imgData,'PNG',0,0,w,imgH);
+      } else {
+        let posY=0;
+        while(posY<imgH){
+          if(posY>0)pdf.addPage();
+          pdf.addImage(imgData,'PNG',0,-posY,w,imgH);
+          posY+=pageH;
+        }
+      }
+    });
   });
-  chain.then(()=>{showPage(currentPage);pdf.save(`Soal_${document.getElementById('mataPelajaran').value}_Kelas${document.getElementById('kelas').value}.pdf`);});
+  chain.then(()=>{
+    showPage(currentPage);
+    pdf.save(`Soal_${document.getElementById('mataPelajaran').value}_Kelas${document.getElementById('kelas').value}.pdf`);
+  });
 }
 
 /* ════════════════════════════════════════════
@@ -1032,7 +1071,17 @@ function exportWord(){
     uraian.forEach((item,i)=>{body+=`<table width="100%" style="font-family:Times New Roman,serif;font-size:11pt;margin-bottom:6pt;border-collapse:collapse;"><tr><td width="22" valign="top">${pg.length+isian.length+i+1}.</td><td>${item.soal}<table width="100%" style="margin-top:3pt;"><tr><td style="border:1px solid #bbb;height:48pt;">&nbsp;</td></tr></table></td></tr></table>`;});
   }
 
-  const wordHtml=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>body{font-family:"Times New Roman",serif;font-size:12pt;margin:2cm;}table{border-collapse:collapse;}td{vertical-align:top;}p{margin:3pt 0;}</style></head><body>${body}</body></html>`;
+  const wordHtml=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>
+  body{font-family:"Times New Roman",serif;font-size:11pt;margin:2cm 2.5cm;}
+  p{margin:3pt 0;line-height:1.4;}
+  table{border-collapse:collapse;width:100%;}
+  td{vertical-align:top;font-family:"Times New Roman",serif;font-size:11pt;}
+  .soal-no{width:22pt;vertical-align:top;}
+  .opsi-table td{padding:1pt 4pt;}
+</style>
+</head><body>${body}</body></html>`;
   const blob=new Blob(['\ufeff',wordHtml],{type:'application/msword'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   a.href=url;a.download=`Soal_${mapel}_Kelas${kelas}.docx`;a.click();URL.revokeObjectURL(url);
