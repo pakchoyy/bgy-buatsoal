@@ -653,15 +653,9 @@ function showTab(tab,el){
 /* ════════════════════════════════════════════
    MODAL API KEY (tetap untuk opsional)
 ════════════════════════════════════════════ */
-function showModal(){document.getElementById('modalOverlay').style.display='flex';}
-function simpanApiKey(){
-  const key=document.getElementById('inputApiKey').value.trim();
-  if(!key){alert('Masukkan API Key terlebih dahulu.');return;}
-  GEMINI_API_KEY=key;
-  localStorage.setItem('gemini_api_key',key);
-  document.getElementById('modalOverlay').style.display='none';
-}
-function skipApiKey(){document.getElementById('modalOverlay').style.display='none';}
+function showModal(){console.log('Modal dihapus — API Key dikelola Netlify');}
+function simpanApiKey(){}
+function skipApiKey(){}
 
 /* ════════════════════════════════════════════
    DARK MODE
@@ -732,7 +726,6 @@ function getJudulUjian(){
    GENERATE — langsung fetch Gemini API
 ════════════════════════════════════════════ */
 async function handleGenerate(){
-  if(!GEMINI_API_KEY){showModal();return;}
   const materi=getMateriTerpilih();
   if(!materi){showError('Pilih minimal satu materi.');return;}
   const kesulitan=getKesulitanTerpilih();
