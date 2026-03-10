@@ -180,7 +180,7 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
 
 /* Preview */
 .preview-wrap{position:relative;}
-.page-nav{display:none!important;}
+.page-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
 .page-nav button{background:var(--card-bg);border:2px solid var(--border);color:var(--text);width:33px;height:33px;border-radius:50%;font-size:.95rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
 .page-nav button:hover:not(:disabled){border-color:var(--blue);color:var(--blue);}
 .page-nav button:disabled{opacity:.3;cursor:not-allowed;}
@@ -202,8 +202,8 @@ body.dark .btn-secondary{background:#374151;color:#f1f5f9;}
 .doc-ujian-title{font-size:11pt;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;font-family:'Times New Roman',serif;}
 .doc-school-name{font-size:14pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:'Times New Roman',serif;margin:3px 0;}
 .doc-tahun{font-size:10pt;font-family:'Times New Roman',serif;}
-.doc-header-line{border-top:3px solid #000;height:0;margin:5px 0 9px;}
-.doc-identitas-line{border-top:1px solid #000;margin:7px 0 9px;}
+.doc-header-line{border-top:3px solid #000;border-bottom:3px solid #000;height:4px;margin:5px 0 9px;}
+.doc-identitas-line{border-top:3px solid #000;border-bottom:3px solid #000;height:4px;margin:7px 0 9px;}
 .doc-identitas-table{width:100%;border-collapse:collapse;margin-bottom:0;font-size:11pt;font-family:'Times New Roman',serif;}
 .doc-identitas-table td{padding:2px 4px;vertical-align:top;}
 .id-label{width:110px;}.id-sep{width:10px;text-align:center;}
@@ -504,7 +504,8 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
         <button class="btn btn-secondary" onclick="exportWord()">💾 Save Word</button>
         <button class="btn btn-secondary" onclick="copyContent()">📋 Copy</button>
         <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-secondary" id="btnKunci" onclick="toggleKunci()">🔑 Kunci</button>
+        <button class="btn btn-secondary" id="btnKunci" onclick="toggleKunci()">🔑 Kunci Jawaban</button>
+        <button class="btn btn-secondary" onclick="downloadKunciPDF()">📥 Unduh Kunci</button>
       </div>
     </div>
 
@@ -977,37 +978,54 @@ function buildHalaman(data){
   const headerHtml=buildDocHeader();
   halamanSoal=[];
 
-  // Render semua soal jadi 1 HTML panjang — page-break diatur CSS saat print
-  let html=headerHtml;
-  let tabelOpen=false;
+  const PAGE_H=860;
+  const HEADER_H=140;
+  const SECTION_H=45;
+  const PG_H=75;
+  const ISIAN_H=52;
+  const URAIAN_H=95;
 
-  function closeTabel(){if(tabelOpen){html+='</table>';tabelOpen=false;}}
-  function openTabel(){if(!tabelOpen){html+='<table class="doc-soal-table">';tabelOpen=true;}}
+  let currentH=HEADER_H;
+  let currentBlocks=[];
+  let isFirstPage=true;
+
+  function closePage(){
+    let html=isFirstPage?headerHtml:'';
+    let prevType='';let tb=false;
+    currentBlocks.forEach(b=>{
+      if(b.type==='section'){
+        if(tb){html+='</table>';tb=false;}
+        html+=`<div class="doc-section-title">${b.label}</div><div class="doc-petunjuk">${b.petunjuk}</div>`;
+        prevType='';
+      } else {
+        if(b.type!==prevType){if(tb){html+='</table>';tb=false;}html+='<table class="doc-soal-table">';tb=true;prevType=b.type;}
+        html+=buildSoalRow(b);
+      }
+    });
+    if(tb)html+='</table>';
+    halamanSoal.push(html);
+    currentBlocks=[];currentH=0;isFirstPage=false;
+  }
+
+  function addBlock(b,h){
+    if(currentH+h>PAGE_H&&currentBlocks.length>0)closePage();
+    currentBlocks.push(b);currentH+=h;
+  }
 
   if(pg.length>0){
-    closeTabel();
-    html+=`<div class="doc-section-title">I. Pilihan Ganda</div><div class="doc-petunjuk">Berilah tanda silang (X) pada huruf jawaban yang paling benar!</div>`;
-    openTabel();
-    pg.forEach((item,i)=>{ html+=buildSoalRow({type:'pg',item,no:i+1}); });
-    closeTabel();
+    addBlock({type:'section',label:'I. Pilihan Ganda',petunjuk:'Berilah tanda silang (X) pada huruf jawaban yang paling benar!'},SECTION_H);
+    pg.forEach((item,i)=>addBlock({type:'pg',item,no:i+1},PG_H));
   }
   if(isian.length>0){
-    closeTabel();
-    html+=`<div class="doc-section-title">II. Isian Singkat</div><div class="doc-petunjuk">Isilah titik-titik berikut dengan jawaban yang tepat!</div>`;
-    openTabel();
-    isian.forEach((item,i)=>{ html+=buildSoalRow({type:'isian',item,no:pg.length+i+1}); });
-    closeTabel();
+    addBlock({type:'section',label:'II. Isian Singkat',petunjuk:'Isilah titik-titik berikut dengan jawaban yang tepat!'},SECTION_H);
+    isian.forEach((item,i)=>addBlock({type:'isian',item,no:pg.length+i+1},ISIAN_H));
   }
   if(uraian.length>0){
-    closeTabel();
-    html+=`<div class="doc-section-title">III. Uraian</div><div class="doc-petunjuk">Jawablah pertanyaan berikut dengan lengkap dan benar!</div>`;
-    openTabel();
-    uraian.forEach((item,i)=>{ html+=buildSoalRow({type:'uraian',item,no:pg.length+isian.length+i+1}); });
-    closeTabel();
+    addBlock({type:'section',label:'III. Uraian',petunjuk:'Jawablah pertanyaan berikut dengan lengkap dan benar!'},SECTION_H);
+    uraian.forEach((item,i)=>addBlock({type:'uraian',item,no:pg.length+isian.length+i+1},URAIAN_H));
   }
-
-  if(!html){html=headerHtml+'<p style="padding:20px;color:#999;">Tidak ada soal.</p>';}
-  halamanSoal=[html]; // selalu 1 "halaman" preview, page-break diatur CSS
+  if(currentBlocks.length>0)closePage();
+  if(!halamanSoal.length)halamanSoal.push(headerHtml+'<p style="padding:20px;color:#999;">Tidak ada soal.</p>');
   renderKunci(data,pg,isian,uraian);
 }
 
@@ -1093,8 +1111,62 @@ function prevPage(){showPage(currentPage-1);}
 function nextPage(){showPage(currentPage+1);}
 
 /* ════════════════════════════════════════════
-   KUNCI
+   DOWNLOAD KUNCI PDF
 ════════════════════════════════════════════ */
+function downloadKunciPDF(){
+  if(!soalData){alert('Generate soal terlebih dahulu.');return;}
+  const pg=soalData.pilihanGanda||[];
+  const isian=soalData.isian||[];
+  const uraian=soalData.uraian||[];
+  const mapel=document.getElementById('mataPelajaran').value;
+  const kelas=document.getElementById('kelas').value;
+  const namaSekolah=document.getElementById('namaSekolah').value||'SDN ---';
+
+  let body=`<div style="text-align:center;margin-bottom:16pt;">
+    <div style="font-size:13pt;font-weight:900;text-transform:uppercase;">${namaSekolah}</div>
+    <div style="font-size:11pt;font-weight:bold;">KUNCI JAWABAN</div>
+    <div style="font-size:10pt;">${mapel} — Kelas ${kelas}</div>
+    <div style="border-top:3px solid black;border-bottom:3px solid black;height:4px;margin:8pt 0;"></div>
+  </div>`;
+
+  if(pg.length>0){
+    body+=`<div style="font-weight:bold;text-decoration:underline;margin-bottom:6pt;">I. Pilihan Ganda</div>`;
+    body+=`<table style="width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:12pt;">`;
+    for(let i=0;i<pg.length;i+=5){
+      body+=`<tr>`;
+      for(let j=i;j<Math.min(i+5,pg.length);j++){
+        body+=`<td style="padding:3pt 8pt;border:1px solid #ccc;width:20%;">${j+1}. <b>${pg[j].jawaban||'—'}</b></td>`;
+      }
+      body+=`</tr>`;
+    }
+    body+=`</table>`;
+  }
+  if(isian.length>0){
+    body+=`<div style="font-weight:bold;text-decoration:underline;margin-bottom:6pt;">II. Isian Singkat</div>`;
+    body+=`<table style="width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:12pt;">`;
+    isian.forEach((item,i)=>{
+      body+=`<tr><td style="padding:3pt 6pt;vertical-align:top;width:24pt;">${pg.length+i+1}.</td><td style="padding:3pt 6pt;">${item.jawaban||'—'}</td></tr>`;
+    });
+    body+=`</table>`;
+  }
+  if(uraian.length>0){
+    body+=`<div style="font-weight:bold;text-decoration:underline;margin-bottom:6pt;">III. Uraian</div>`;
+    body+=`<table style="width:100%;border-collapse:collapse;font-size:11pt;">`;
+    uraian.forEach((item,i)=>{
+      body+=`<tr><td style="padding:4pt 6pt;vertical-align:top;width:24pt;">${pg.length+isian.length+i+1}.</td><td style="padding:4pt 6pt;">${item.jawaban||'—'}</td></tr>`;
+    });
+    body+=`</table>`;
+  }
+
+  const printWin=window.open('','_blank');
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>Kunci_${mapel}_Kelas${kelas}</title>
+  <style>@page{size:A4;margin:20mm 25mm;}body{font-family:'Times New Roman',serif;font-size:11pt;color:#000;margin:0;}table{border-collapse:collapse;}td{vertical-align:top;}</style>
+  </head><body>${body}</body></html>`);
+  printWin.document.close();
+  setTimeout(()=>{printWin.focus();printWin.print();printWin.close();},400);
+}
+
 function renderKunci(data,pg,isian,uraian){
   let html='';
   if(pg.length>0){html+=`<div style="margin-bottom:7px;"><strong style="font-size:.76rem;color:var(--text-light);">PILIHAN GANDA</strong></div><div class="kunci-grid">`;pg.forEach((item,i)=>{html+=`<div class="kunci-item">${i+1}. <strong>${escHtml(item.jawaban)}</strong></div>`;});html+=`</div>`;}
