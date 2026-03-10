@@ -938,7 +938,7 @@ Untuk kelas 1-2, array opsi hanya 3 elemen (A, B, C).`;
     const resp=await fetch('/api/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+      body:JSON.stringify({prompt:prompt})
     });
     const json=await resp.json();
     if(json.error)throw new Error(json.error);
