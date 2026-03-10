@@ -69,7 +69,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ══ INSTALL POPUP ══ */
-#installPopup{position:fixed;top:-80px;left:0;right:0;background:linear-gradient(90deg,#34d399,#3b82f6);color:#fff;padding:12px 16px;text-align:center;transition:.4s;z-index:9998;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;}
+#installPopup{position:fixed;top:-90px;left:0;right:0;background:var(--grad);color:#fff;padding:12px 16px;text-align:center;transition:.4s;z-index:9998;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 3px 12px rgba(0,0,0,.2);}
 #installPopup.show{top:0;}
 #installPopup button{border:none;border-radius:8px;padding:5px 14px;font-weight:700;cursor:pointer;font-size:.8rem;}
 .btn-install{background:#fff;color:#3b82f6;}
@@ -241,15 +241,20 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
 /* Responsive */
 @media(max-width:960px){
   main{grid-template-columns:1fr;padding:12px;gap:13px;}
-  #previewBox{padding:7mm 7mm 7mm 9mm;font-size:10pt;}
+  #previewBox{padding:7mm 7mm 7mm 9mm;font-size:10pt;width:100%;box-sizing:border-box;}
   .btn{padding:6px 10px;font-size:.76rem;}
   .doc-school-name{font-size:12pt;}.doc-ujian-title{font-size:10pt;}
-  .page-nav button{width:30px;height:30px;}
+  .col-preview{overflow-x:auto;}
 }
 @media(max-width:480px){
-  #previewBox{padding:4mm;font-size:9pt;}
-  header{padding:9px 13px;}.header-brand h1{font-size:1rem;}
-  .version-badge{display:none;}
+  #previewBox{padding:4mm;font-size:9pt;width:100%;min-height:unset;}
+  header{padding:8px 12px;}.header-brand h1{font-size:.95rem;}
+  .header-brand p{display:none;}
+  .version-badge{font-size:.58rem;padding:2px 7px;}
+  .export-bar{gap:4px;}
+  .export-bar .btn{padding:5px 8px;font-size:.72rem;}
+  .navbar{gap:4px;}
+  .navbar a{padding:6px 10px;font-size:.78rem;}
 }
 
 /* Print */
@@ -298,6 +303,7 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
 <nav class="navbar">
   <a onclick="showTab('home',this)" class="active">🏠 Home</a>
   <a onclick="showTab('tentang',this)">ℹ️ Tentang</a>
+  <a onclick="showTab('histori',this)">🕒 Histori <span id="historiBadge" style="background:#ef4444;color:#fff;border-radius:99px;padding:1px 6px;font-size:.65rem;font-weight:800;margin-left:2px;"></span></a>
   <a onclick="showTab('kontak',this)">📬 Kontak</a>
 </nav>
 
@@ -338,6 +344,21 @@ footer .footer-sub{font-size:.7rem;color:rgba(255,255,255,.8);}
 </div>
 
 <!-- ══ TAB KONTAK ══ -->
+<!-- TAB HISTORI -->
+<div id="tab-histori" style="display:none;max-width:900px;margin:20px auto;padding:0 12px;">
+  <div style="background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <h3 style="font-size:1rem;font-weight:800;margin:0;">🕒 Histori Soal</h3>
+      <button onclick="hapusSemuaHistori()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;">🗑️ Hapus Semua</button>
+    </div>
+    <div id="historiList">
+      <div style="text-align:center;padding:40px 0;color:var(--text-light);font-size:.88rem;">
+        Belum ada histori soal.<br>Generate soal dulu ya! 😊
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="tab-kontak" style="display:none;max-width:760px;margin:20px auto;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;">
   <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;">📬 Kontak</h3>
   <p style="font-size:.85rem;color:var(--text);line-height:1.7;margin-bottom:16px;">Untuk info lebih lanjut, bantuan penggunaan, atau menyampaikan kritik dan saran:</p>
@@ -636,10 +657,15 @@ let deferredInstallPrompt=null;
   if(savedKey){GEMINI_API_KEY=savedKey;}
   // Form
   renderMapelOptions();renderMateriChecklist();
+  // Init histori badge
+  updateHistoriBadge(getHistoriList().length);
   // Install prompt
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();deferredInstallPrompt=e;
-    if(!sessionStorage.getItem('installClosed')){
+    const last=localStorage.getItem('installClosedAt');
+    const now=Date.now();
+    // Tampilkan lagi kalau belum pernah tutup, atau sudah lebih dari 1 hari
+    if(!last||now-parseInt(last)>86400000){
       setTimeout(()=>document.getElementById('installPopup').classList.add('show'),2000);
     }
   });
@@ -654,7 +680,7 @@ function installApp(){
 }
 function closeInstall(){
   document.getElementById('installPopup').classList.remove('show');
-  sessionStorage.setItem('installClosed','yes');
+  localStorage.setItem('installClosedAt',Date.now().toString());
 }
 
 /* ════════════════════════════════════════════
@@ -663,9 +689,11 @@ function closeInstall(){
 function showTab(tab,el){
   document.getElementById('tab-home').style.display=tab==='home'?'block':'none';
   document.getElementById('tab-tentang').style.display=tab==='tentang'?'block':'none';
+  document.getElementById('tab-histori').style.display=tab==='histori'?'block':'none';
   document.getElementById('tab-kontak').style.display=tab==='kontak'?'block':'none';
   document.querySelectorAll('.navbar a').forEach(a=>a.classList.remove('active'));
   if(el)el.classList.add('active');
+  if(tab==='histori')renderHistoriList();
 }
 
 /* ════════════════════════════════════════════
@@ -673,6 +701,130 @@ function showTab(tab,el){
 ════════════════════════════════════════════ */
 function showModal(){console.log('Modal dihapus — API Key dikelola Netlify');}
 function simpanApiKey(){}
+
+/* ════════════════════════════════════════════
+   HISTORI SOAL
+════════════════════════════════════════════ */
+const MAX_HISTORI=20;
+
+function simpanHistori(data){
+  try{
+    const mapel=document.getElementById('mataPelajaran').value;
+    const kelas=document.getElementById('kelas').value;
+    const namaSekolah=document.getElementById('namaSekolah').value||'SDN ---';
+    const jenis=document.getElementById('jenisUjian').value||'Ulangan Harian';
+    const pg=(data.pilihanGanda||[]).length;
+    const isian=(data.isian||[]).length;
+    const uraian=(data.uraian||[]).length;
+    const item={
+      id:Date.now(),
+      tanggal:new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+      mapel,kelas,namaSekolah,jenis,pg,isian,uraian,
+      data:JSON.stringify(data),
+      formState:{
+        namaSekolah:document.getElementById('namaSekolah').value,
+        tahunPelajaran:document.getElementById('tahunPelajaran').value,
+        semester:document.getElementById('semester').value,
+        tanggal:document.getElementById('tanggal').value,
+        jenisUjian:document.getElementById('jenisUjian').value,
+        kelas,mapel,
+        pgCount:document.getElementById('pgCount').value,
+        isianCount:document.getElementById('isianCount').value,
+        uraianCount:document.getElementById('uraianCount').value,
+      }
+    };
+    let list=getHistoriList();
+    list.unshift(item);
+    if(list.length>MAX_HISTORI)list=list.slice(0,MAX_HISTORI);
+    localStorage.setItem('bgy_histori',JSON.stringify(list));
+    updateHistoriBadge(list.length);
+  }catch(e){console.warn('Gagal simpan histori:',e);}
+}
+
+function getHistoriList(){
+  try{return JSON.parse(localStorage.getItem('bgy_histori')||'[]');}
+  catch{return [];}
+}
+
+function updateHistoriBadge(n){
+  const el=document.getElementById('historiBadge');
+  if(el)el.textContent=n>0?n:'';
+}
+
+function renderHistoriList(){
+  const list=getHistoriList();
+  const container=document.getElementById('historiList');
+  if(!list.length){
+    container.innerHTML=`<div style="text-align:center;padding:40px 0;color:var(--text-light);font-size:.88rem;">Belum ada histori soal.<br>Generate soal dulu ya! 😊</div>`;
+    return;
+  }
+  container.innerHTML=list.map(item=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--input-bg);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:3px;">📘 ${item.mapel} — Kelas ${item.kelas}</div>
+        <div style="font-size:.78rem;color:var(--text-light);margin-bottom:4px;">🏫 ${item.namaSekolah} &nbsp;|&nbsp; ${item.jenis}</div>
+        <div style="font-size:.75rem;color:var(--text-light);">
+          PG: ${item.pg} &nbsp;|&nbsp; Isian: ${item.isian} &nbsp;|&nbsp; Uraian: ${item.uraian} &nbsp;|&nbsp; 🕒 ${item.tanggal}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button onclick="loadHistori(${item.id})" style="background:var(--grad);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;">📂 Buka</button>
+        <button onclick="hapusHistori(${item.id})" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:.78rem;font-weight:700;cursor:pointer;">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadHistori(id){
+  const list=getHistoriList();
+  const item=list.find(h=>h.id===id);
+  if(!item){alert('Histori tidak ditemukan.');return;}
+  try{
+    // Restore form state
+    const f=item.formState;
+    if(f){
+      document.getElementById('namaSekolah').value=f.namaSekolah||'';
+      document.getElementById('tahunPelajaran').value=f.tahunPelajaran||'';
+      document.getElementById('semester').value=f.semester||'1';
+      document.getElementById('tanggal').value=f.tanggal||'';
+      if(document.getElementById('jenisUjian'))document.getElementById('jenisUjian').value=f.jenisUjian||'';
+      document.getElementById('pgCount').value=f.pgCount||10;
+      document.getElementById('isianCount').value=f.isianCount||5;
+      document.getElementById('uraianCount').value=f.uraianCount||3;
+      // Set kelas & mapel lalu update materi
+      document.getElementById('kelas').value=f.kelas||'1';
+      document.getElementById('mataPelajaran').value=f.mapel||'';
+      renderMateriChecklist();
+    }
+    // Load soal data
+    soalData=JSON.parse(item.data);
+    buildHalaman(soalData);
+    currentPage=0;showPage(0);
+    kunciVisible=false;
+    document.getElementById('kunciBox').style.display='none';
+    document.getElementById('btnKunci').textContent='🔑 Kunci';
+    // Pindah ke tab home
+    showTab('home',document.querySelector('.navbar a'));
+    document.querySelectorAll('.navbar a').forEach(a=>a.classList.remove('active'));
+    document.querySelector('.navbar a').classList.add('active');
+  }catch(e){alert('Gagal load histori: '+e.message);}
+}
+
+function hapusHistori(id){
+  if(!confirm('Hapus histori ini?'))return;
+  let list=getHistoriList().filter(h=>h.id!==id);
+  localStorage.setItem('bgy_histori',JSON.stringify(list));
+  updateHistoriBadge(list.length);
+  renderHistoriList();
+}
+
+function hapusSemuaHistori(){
+  if(!confirm('Hapus semua histori soal?'))return;
+  localStorage.removeItem('bgy_histori');
+  updateHistoriBadge(0);
+  renderHistoriList();
+}
+
 function skipApiKey(){}
 
 /* ════════════════════════════════════════════
@@ -783,7 +935,7 @@ Kembalikan HANYA JSON valid tanpa markdown, tanpa backtick, tanpa komentar:
 Untuk kelas 1-2, array opsi hanya 3 elemen (A, B, C).`;
 
   try{
-    const resp=await fetch('/.netlify/functions/generate',{
+    const resp=await fetch('/api/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
@@ -799,6 +951,7 @@ Untuk kelas 1-2, array opsi hanya 3 elemen (A, B, C).`;
     kunciVisible=false;
     document.getElementById('kunciBox').style.display='none';
     document.getElementById('btnKunci').textContent='🔑 Kunci';
+    simpanHistori(data);
   }catch(e){
     showError('Gagal: '+e.message+'. Cek API Key kamu.');
   }finally{
